@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cute Space | Personal Growth Journey</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF85A2', // Soft pink
+                        secondary: '#FF6B9E', // Vibrant pink
+                        accent: '#C8A2C8', // Lavender
+                        seal: '#87CEEB', // Seal blue
+                        light: '#FFF9FB', // Off-white
+                        dark: '#4A4A4A', // Soft dark text
+                        pastel: {
+                            pink: '#FFE6EF',
+                            purple: '#F0E6FF',
+                            blue: '#E6F7FF',
+                            yellow: '#FFF8E6'
+                        }
+                    },
+                    fontFamily: {
+                        cute: ['Comic Sans MS', 'Arial Rounded MT Bold', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'cute': '0 4px 15px rgba(255, 107, 158, 0.15)',
+                        'cute-hover': '0 8px 25px rgba(255, 107, 158, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .section-padding {
+                @apply py-16 md:py-24;
+            }
+            .section-title {
+                @apply text-3xl md:text-4xl font-bold mb-8 text-dark text-center;
+            }
+            .card-cute {
+                @apply transition-all duration-300 hover:shadow-cute-hover hover:-translate-y-2 rounded-2xl overflow-hidden;
+            }
+            .seal-button {
+                @apply bg-seal/20 hover:bg-seal/40 text-seal transition-all duration-300 rounded-full p-3;
+            }
+            .edit-mode {
+                @apply border-2 border-secondary/50 shadow-lg;
+            }
+        }
+        
+        /* Cute character icons */
+        .sanrio-icon {
+            background-image: url('https://picsum.photos/id/237/100/100');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .tamagotchi-icon {
+            background-image: url('https://picsum.photos/id/180/100/100');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .sumikko-icon {
+            background-image: url('https://picsum.photos/id/199/100/100');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .seal-icon {
+            background-image: url('https://picsum.photos/id/1028/100/100');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFF9FB;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF85A2;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF6B9E;
+        }
+        
+        /* Fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .edit-overlay {
+            background-color: rgba(255, 249, 251, 0.95);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="bg-light font-cute text-dark">
+    <!-- Edit Mode Password Modal -->
+    <div id="editPasswordModal" class="fixed inset-0 flex items-center justify-center z-50 hidden edit-overlay">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-cute-hover">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-secondary flex items-center gap-2">
+                    <span class="w-8 h-8 seal-icon rounded-full"></span>
+                    Edit Mode Access
+                </h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-dark">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <p class="text-gray-600 mb-6">Enter your password to access edit mode and manage your content</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="editPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="editPassword" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-transparent" placeholder="Enter edit password">
+                    <p id="passwordError" class="text-red-500 text-sm mt-1 hidden">Incorrect password, please try again!</p>
+                </div>
+                
+                <button id="verifyPasswordBtn" class="w-full bg-secondary text-white py-3 rounded-xl font-medium hover:bg-secondary/90 transition-colors shadow-sm">
+                    Access Edit Mode
+                </button>
+                
+                <div class="text-center text-sm text-gray-500">
+                    <p>Default password: <span class="font-medium">cute1234</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="fixed w-full bg-white/95 backdrop-blur-md shadow-cute z-40">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <!-- Logo with cute character -->
+            <a href="#home" class="text-2xl font-bold text-secondary flex items-center gap-2">
+                <span class="w-8 h-8 sanrio-icon rounded-full"></span>
+                MyCuteSpace
+            </a>
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex space-x-6">
+                <a href="#home" class="font-medium hover:text-secondary transition-colors py-2 px-1 rounded-full hover:bg-pastel-pink/50">Home</a>
+                <a href="#study-diary" class="font-medium hover:text-secondary transition-colors py-2 px-1 rounded-full hover:bg-pastel-pink/50">Study Diary</a>
+                <a href="#daily-vlog" class="font-medium hover:text-secondary transition-colors py-2 px-1 rounded-full hover:bg-pastel-pink/50">Daily Vlog</a>
+                <a href="#week-diary" class="font-medium hover:text-secondary transition-colors py-2 px-1 rounded-full hover:bg-pastel-pink/50">Weekly Diary</a>
+                <a href="#personal-target" class="font-medium hover:text-secondary transition-colors py-2 px-1 rounded-full hover:bg-pastel-pink/50">My Goals</a>
+                <a href="#achievements" class="font-medium hover:text-secondary transition-colors py-2 px-1 rounded-full hover:bg-pastel-pink/50">Achievements</a>
+            </nav>
+            
+            <!-- Edit Mode Button (Seal Icon) -->
+            <div class="flex items-center gap-3">
+                <button id="editModeBtn" class="seal-button">
+                    <span class="w-6 h-6 seal-icon inline-block"></span>
+                </button>
+                
+                <!-- Mobile Menu Button -->
+                <button id="menuBtn" class="md:hidden text-secondary text-xl">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Menu -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white shadow-cute rounded-b-2xl">
+            <div class="container mx-auto px-4 py-4 flex flex-col space-y-3">
+                <a href="#home" class="py-3 px-4 font-medium hover:text-secondary transition-colors rounded-xl hover:bg-pastel-pink/30">
+                    <i class="fas fa-home w-6 text-secondary"></i> Home
+                </a>
+                <a href="#study-diary" class="py-3 px-4 font-medium hover:text-secondary transition-colors rounded-xl hover:bg-pastel-pink/30">
+                    <i class="fas fa-book w-6 text-secondary"></i> Study Diary
+                </a>
+                <a href="#daily-vlog" class="py-3 px-4 font-medium hover:text-secondary transition-colors rounded-xl hover:bg-pastel-pink/30">
+                    <i class="fas fa-video w-6 text-secondary"></i> Daily Vlog
+                </a>
+                <a href="#week-diary" class="py-3 px-4 font-medium hover:text-secondary transition-colors rounded-xl hover:bg-pastel-pink/30">
+                    <i class="fas fa-calendar-week w-6 text-secondary"></i> Weekly Diary
+                </a>
+                <a href="#personal-target" class="py-3 px-4 font-medium hover:text-secondary transition-colors rounded-xl hover:bg-pastel-pink/30">
+                    <i class="fas fa-bullseye w-6 text-secondary"></i> My Goals
+                </a>
+                <a href="#achievements" class="py-3 px-4 font-medium hover:text-secondary transition-colors rounded-xl hover:bg-pastel-pink/30">
+                    <i class="fas fa-award w-6 text-secondary"></i> Achievements
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Edit Mode Toolbar (Hidden by default) -->
+    <div id="editToolbar" class="fixed top-20 right-4 z-40 hidden fade-in">
+        <div class="bg-white rounded-2xl shadow-cute-hover p-3 flex flex-col gap-3">
+            <button id="saveAllBtn" class="bg-secondary text-white px-4 py-2 rounded-xl font-medium text-sm hover:bg-secondary/90 transition-colors flex items-center gap-2">
+                <i class="fas fa-save"></i> Save All
+            </button>
+            <button id="addDiaryBtn" class="bg-pastel-pink/50 text-secondary px-4 py-2 rounded-xl font-medium text-sm hover:bg-pastel-pink/80 transition-colors flex items-center gap-2">
+                <i class="fas fa-plus"></i> Add Diary
+            </button>
+            <button id="addVlogBtn" class="bg-pastel-purple/50 text-accent px-4 py-2 rounded-xl font-medium text-sm hover:bg-pastel-purple/80 transition-colors flex items-center gap-2">
+                <i class="fas fa-plus"></i> Add Vlog
+            </button>
+            <button id="exitEditBtn" class="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl font-medium text-sm hover:bg-gray-200 transition-colors flex items-center gap-2">
+                <i class="fas fa-times"></i> Exit Edit
+            </button>
+        </div>
+    </div>
+
+    <!-- Home Hero Section -->
+    <section id="home" class="pt-32 pb-20 bg-gradient-to-br from-pastel-pink/30 to-pastel-purple/30 relative overflow-hidden">
+        <!-- Cute character decorations -->
+        <div class="absolute top-10 right-10 w-20 h-20 tamagotchi-icon opacity-20"></div>
+        <div class="absolute bottom-10 left-10 w-16 h-16 sumikko-icon opacity-20"></div>
+        <div class="absolute bottom-20 right-20 w-18 h-18 seal-icon opacity-15"></div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="flex flex-col md:flex-row items-center gap-10">
+                <div class="md:w-1/2 text-center md:text-left">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                        Hi, I'm <span class="text-secondary">Your Name</span>
+                        <br>Welcome to My Cute Space 💖
+                    </h1>
+                    <p class="text-lg text-gray-600 mb-8 max-w-lg mx-auto md:mx-0">
+                        A cozy corner to record my growth, share daily moments,
+                        and celebrate every little achievement ✨
+                    </p>
+                    <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+                        <a href="#personal-target" class="px-6 py-3 bg-secondary text-white rounded-full font-medium hover:bg-secondary/90 transition-colors shadow-cute">
+                            My Goals
+                        </a>
+                        <a href="#achievements" class="px-6 py-3 border border-secondary text-secondary rounded-full font-medium hover:bg-pastel-pink/30 transition-colors">
+                            My Achievements
+                        </a>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <img src="https://picsum.photos/id/1005/600/400" alt="Personal profile" class="rounded-2xl shadow-cute w-full object-cover border-4 border-white">
+                </div>
+            </div>
+            
+            <!-- Quick Navigation Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-16">
+                <a href="#study-diary" class="bg-white rounded-2xl p-4 text-center card-cute shadow-cute editable-card">
+                    <div class="w-12 h-12 mx-auto mb-2 bg-pastel-pink/50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-book text-secondary text-xl"></i>
+                    </div>
+                    <span class="font-medium">Study Diary</span>
+                </a>
+                <a href="#daily-vlog" class="bg-white rounded-2xl p-4 text-center card-cute shadow-cute editable-card">
+                    <div class="w-12 h-12 mx-auto mb-2 bg-pastel-purple/50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-video text-accent text-xl"></i>
+                    </div>
+                    <span class="font-medium">Daily Vlog</span>
+                </a>
+                <a href="#week-diary" class="bg-white rounded-2xl p-4 text-center card-cute shadow-cute editable-card">
+                    <div class="w-12 h-12 mx-auto mb-2 bg-pastel-blue/50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-calendar text-primary text-xl"></i>
+                    </div>
+                    <span class="font-medium">Weekly Diary</span>
+                </a>
+                <a href="#personal-target" class="bg-white rounded-2xl p-4 text-center card-cute shadow-cute editable-card">
+                    <div class="w-12 h-12 mx-auto mb-2 bg-pastel-yellow/50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-star text-primary text-xl"></i>
+                    </div>
+                    <span class="font-medium">My Goals</span>
+                </a>
+                <a href="#achievements" class="bg-white rounded-2xl p-4 text-center card-cute shadow-cute editable-card">
+                    <div class="w-12 h-12 mx-auto mb-2 bg-pastel-pink/50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-trophy text-secondary text-xl"></i>
+                    </div>
+                    <span class="font-medium">Achievements</span>
+                </a>
+                <button id="quickEditBtn" class="bg-white rounded-2xl p-4 text-center card-cute shadow-cute seal-button">
+                    <div class="w-12 h-12 mx-auto mb-2 bg-pastel-blue/50 rounded-full flex items-center justify-center">
+                        <span class="w-8 h-8 seal-icon inline-block"></span>
+                    </div>
+                    <span class="font-medium">Edit Content</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Study Diary Section -->
+    <section id="study-diary" class="section-padding bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="section-title text-secondary">📖 Study Diary</h2>
+            
+            <div id="studyDiaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Diary Card 1 -->
+                <div class="bg-light rounded-2xl p-6 shadow-cute card-cute border border-pastel-pink/50 editable-card" data-id="diary1">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-sm text-gray-500 bg-pastel-yellow/50 px-3 py-1 rounded-full editable-text" data-field="date">2026-02-05</span>
+                        <span class="px-3 py-1 bg-pastel-pink/50 text-secondary text-xs rounded-full editable-text" data-field="category">Programming</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 editable-text" data-field="title">JavaScript Learning Notes</h3>
+                    <p class="text-gray-600 mb-4 editable-text" data-field="content">
+                        Today I deepened my understanding of JavaScript Promises and async/await. 
+                        Solved 5 practice problems and built a small weather app using API calls ☀️
+                    </p>
+                    <a href="#" class="text-secondary font-medium flex items-center hover:underline">
+                        Read More <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </a>
+                    <button class="edit-card-btn hidden mt-3 text-xs text-secondary flex items-center gap-1">
+                        <i class="fas fa-edit"></i> Edit This Card
+                    </button>
+                </div>
+                
+                <!-- Diary Card 2 -->
+                <div class="bg-light rounded-2xl p-6 shadow-cute card-cute border border-pastel-purple/50 editable-card" data-id="diary2">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-sm text-gray-500 bg-pastel-yellow/50 px-3 py-1 rounded-full editable-text" data-field="date">2026-02-04</span>
+                        <span class="px-3 py-1 bg-pastel-purple/50 text-accent text-xs rounded-full editable-text" data-field="category">Design</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 editable-text" data-field="title">Tailwind CSS Layout Practice</h3>
+                    <p class="text-gray-600 mb-4 editable-text" data-field="content">
+                        Practiced creating responsive layouts with Tailwind CSS. Learned to use custom utilities 
+                        and breakpoints effectively, made several cute card styles 💅
+                    </p>
+                    <a href="#" class="text-secondary font-medium flex items-center hover:underline">
+                        Read More <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </a>
+                    <button class="edit-card-btn hidden mt-3 text-xs text-secondary flex items-center gap-1">
+                        <i class="fas fa-edit"></i> Edit This Card
+                    </button>
+                </div>
+                
+                <!-- Diary Card 3 -->
+                <div class="bg-light rounded-2xl p-6 shadow-cute card-cute border border-pastel-blue/50 editable-card" data-id="diary3">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-sm text-gray-500 bg-pastel-yellow/50 px-3 py-1 rounded-full editable-text" data-field="date">2026-02-03</span>
+                        <span class="px-3 py-1 bg-pastel-blue/50 text-primary text-xs rounded-full editable-text" data-field="category">English</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 editable-text" data-field="title">Technology Vocabulary Building</h3>
+                    <p class="text-gray-600 mb-4 editable-text" data-field="content">
+                        Learned 30 new English words related to technology. Wrote short paragraphs using 
+                        these words to reinforce my memory, made great progress 📚
+                    </p>
+                    <a href="#" class="text-secondary font-medium flex items-center hover:underline">
+                        Read More <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </a>
+                    <button class="edit-card-btn hidden mt-3 text-xs text-secondary flex items-center gap-1">
+                        <i class="fas fa-edit"></i> Edit This Card
+                    </button>
+                </div>
+            </div>
+            
+            <div class="text-center mt-10">
+                <a href="#" class="px-6 py-3 border border-secondary text-secondary rounded-full font-medium hover:bg-pastel-pink/30 transition-colors inline-block shadow-sm">
+                    View All Study Diaries <i class="fas fa-book-open ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Daily Vlog Section -->
+    <section id="daily-vlog" class="section-padding bg-pastel-pink/20">
+        <div class="container mx-auto px-4">
+            <h2 class="section-title text-secondary">🎬 Daily Vlog</h2>
+            
+            <div id="vlogContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Vlog Card 1 -->
+                <div class="rounded-2xl overflow-hidden shadow-cute card-cute bg-white editable-card" data-id="vlog1">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/1039/800/450" alt="Morning routine vlog" class="w-full h-60 object-cover editable-image" data-field="thumbnail">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <button class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center text-secondary hover:bg-white transition-colors shadow-lg">
+                                <i class="fas fa-play text-xl"></i>
+                            </button>
+                        </div>
+                        <button class="absolute top-3 right-3 edit-image-btn hidden bg-white/80 rounded-full p-2 text-secondary hover:bg-white">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 editable-text" data-field="title">My Productive Morning Routine 🌞</h3>
+                        <p class="text-gray-600 mb-4 editable-text" data-field="description">
+                            Waking up at 6 AM, exercise, breakfast, and focused study sessions. 
+                            Recording my efficient morning routine
+                        </p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500 bg-pastel-yellow/30 px-2 py-1 rounded-full editable-text" data-field="date">2026-02-06</span>
+                            <span class="text-sm text-gray-500"><i class="fas fa-eye mr-1"></i> 128 views</span>
+                        </div>
+                        <button class="edit-card-btn hidden mt-3 text-xs text-secondary flex items-center gap-1">
+                            <i class="fas fa-edit"></i> Edit This Vlog
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Vlog Card 2 -->
+                <div class="rounded-2xl overflow-hidden shadow-cute card-cute bg-white editable-card" data-id="vlog2">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/180/800/450" alt="Library study vlog" class="w-full h-60 object-cover editable-image" data-field="thumbnail">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <button class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center text-secondary hover:bg-white transition-colors shadow-lg">
+                                <i class="fas fa-play text-xl"></i>
+                            </button>
+                        </div>
+                        <button class="absolute top-3 right-3 edit-image-btn hidden bg-white/80 rounded-full p-2 text-secondary hover:bg-white">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 editable-text" data-field="title">Library Study Day 📚</h3>
+                        <p class="text-gray-600 mb-4 editable-text" data-field="description">
+                            A day studying at the city library - sharing my focus tips and favorite study spot
+                        </p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500 bg-pastel-yellow/30 px-2 py-1 rounded-full editable-text" data-field="date">2026-02-04</span>
+                            <span class="text-sm text-gray-500"><i class="fas fa-eye mr-1"></i> 96 views</span>
+                        </div>
+                        <button class="edit-card-btn hidden mt-3 text-xs text-secondary flex items-center gap-1">
+                            <i class="fas fa-edit"></i> Edit This Vlog
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Video Upload Section (Hidden by default) -->
+            <div id="videoUploadSection" class="mt-10 bg-white rounded-2xl p-6 shadow-cute hidden fade-in">
+                <h3 class="text-xl font-bold mb-4 text-secondary">📤 Upload New Vlog</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Vlog Title</label>
+                            <input type="text" id="newVlogTitle" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary/50" placeholder="Enter vlog title">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="newVlogDesc" rows="3" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary/50" placeholder="Describe your vlog"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" id="newVlogDate" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary/50">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Thumbnail Image</label>
+                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-secondary/50 transition-colors cursor-pointer bg-gray-50">
+                                <input type="file" id="thumbnailUpload" accept="image/*" class="hidden">
+                                <button type="button" onclick="document.getElementById('thumbnailUpload').click()" class="text-secondary flex flex-col items-center justify-center">
+                                    <i class="fas fa-cloud-upload-alt text-3xl mb-2"></i>
+                                    <span>Click to upload thumbnail</span>
+                                    <span class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Video File</label>
+                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-secondary/50 transition-colors cursor-pointer bg-gray-50">
+                                <input type="file" id="videoUpload" accept="video/*" class="hidden">
+                                <button type="button" onclick="document.getElementById('videoUpload').click()" class="text-secondary flex flex-col items-center justify-center">
+                                    <i class="fas fa-video text-3xl mb-2"></i>
+                                    <span>Click to upload video</span>
+                                    <span class="text-xs text-gray-500 mt-1">MP4, MOV up to 100MB</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-4">
+                    <button id="cancelUploadBtn" class="px-5 py-2 border border-gray-300 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="submitVlogBtn" class="px-5 py-2 bg-secondary text-white rounded-xl font-medium hover:bg-secondary/90 transition-colors">
+                        Upload Vlog
+                    </button>
+                </div>
+            </div>
+            
+            <div class="text-center mt-10">
+                <a href="#" class="px-6 py-3 border border-secondary text-secondary rounded-full font-medium hover:bg-pastel-pink/30 transition-colors inline-block shadow-sm">
+                    Watch More Vlogs <i class="fas fa-video ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Weekly Diary Section -->
+    <section id="week-diary" class="section-padding bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="section-title text-secondary">📅 Weekly Diary</h2>
+            
+            <div class="bg-light rounded-2xl p-8 shadow-cute max-w-4xl mx-auto border border-pastel-purple/30 relative editable-card" data-id="weeklydiary">
+                <!-- Cute decoration -->
+                <div class="absolute top-4 right-4 w-10 h-10 sumikko-icon opacity-30"></div>
+                
+                <div class="flex flex-wrap justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold editable-text" data-field="weektitle">Week 6 (Feb 3 - Feb 9, 2026)</h3>
+                    <span class="px-4 py-1 bg-pastel-purple/50 text-accent text-sm rounded-full mt-2 md:mt-0 editable-text" data-field="weektag">Weekly Review</span>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-pastel-pink/20 p-4 rounded-xl">
+                        <h4 class="font-bold text-lg mb-2 flex items-center editable-text" data-field="highlightstitle">
+                            <i class="fas fa-star text-secondary mr-2"></i> Weekly Highlights
+                        </h4>
+                        <ul class="list-disc list-inside text-gray-600 space-y-2 pl-4 editable-list" data-field="highlights">
+                            <li>Completed 8 hours of JavaScript learning</li>
+                            <li>Published 2 new YouTube videos</li>
+                            <li>Read 2 chapters of "Atomic Habits"</li>
+                            <li>Exercised 4 times this week 💪</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-pastel-blue/20 p-4 rounded-xl">
+                        <h4 class="font-bold text-lg mb-2 flex items-center editable-text" data-field="challengestitle">
