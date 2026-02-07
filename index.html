@@ -340,75 +340,49 @@
             }
         }
 
+        
         /* 首页样式 */
-        .home-container {
+        .home-page {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: 3rem;
-            margin-top: 2rem;
+            justify-content: center;
+            gap: 50px;
+            padding: 20px;
         }
 
-        .character-img {
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 8px solid #ffb3d9;
-            box-shadow: 0 0 20px rgba(255, 102, 179, 0.3);
-            animation: float 3s ease-in-out infinite;
+        .profile-card {
+            background-color: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(255, 102, 179, 0.2);
+            max-width: 400px;
         }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .about-me {
-            flex: 1;
-        }
-
-        .info-card {
-            background-color: #fff8fc;
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ffd6e8;
-        }
-
-        .info-card h4 {
+        .profile-card h1 {
             color: #ff66b3;
-            margin-bottom: 0.8rem;
-            font-size: 18px;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        .info-list {
-            list-style: none;
+        .profile-info {
+            margin: 15px 0;
+            line-height: 1.8;
         }
 
-        .info-list li {
-            margin-bottom: 0.6rem;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-        }
-
-        .info-list li span {
+        .profile-info span {
             font-weight: bold;
             color: #ff66b3;
-            margin-right: 0.5rem;
         }
 
-        .intro-text {
-            line-height: 1.6;
-            font-size: 16px;
-            color: #5a2e48;
-            margin-top: 1rem;
-        }
-
-        .decor-icon {
-            margin-right: 0.5rem;
-            color: #ff66b3;
+        .cartoon-img {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #ff99cc;
+            box-shadow: 0 5px 15px rgba(255, 102, 179, 0.3);
         }
 
         /* 新增：文件夹样式库样式（表情包式常驻展示） */
@@ -532,9 +506,10 @@
                 <div class="profile-card">
                     <h1>About Me 💖</h1>
                     <div class="profile-info">
+                        <p><span>Name:</span> Yomi Qiu</p>
                         <p><span>Birthday:</span> 2010.03.25</p>
                         <p><span>MBTI:</span> INTJ</p>
-                        <p><span>Hobbies:</span> Drawing, Watching anime, Reading, Creating vlogs</p>
+                        <p><span>Hobbies:</span> Playing Tennis, Finding Dilicious Food, Mediating</p>
                         <p><span>Self-introduction:</span> Hello! I'm Yomi, born on March 25, 2010. As an INTJ, I'm a thoughtful and independent person who loves to explore the world around me. 
                                 I enjoy reading, creating art, and documenting my daily life through diaries and vlogs. 
                                 This little corner of the internet is where I share my study journey, daily life, and personal goals. 
