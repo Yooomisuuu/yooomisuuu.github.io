@@ -107,12 +107,15 @@
         .sticker-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 800; }
         .sticker-item { position: absolute; cursor: move; pointer-events: all; transform-origin: center center; transition: all 0.1s ease; border-radius: 8px; overflow: hidden; /* 移除贴纸边框和阴影 */ box-shadow: none; border: none; }
         .sticker-handle { position: absolute; bottom: 5px; right: 5px; width: 20px; height: 20px; background: #ff66b3; border-radius: 50%; cursor: nwse-resize; display: none; }
-        .sticker-rotate-handle { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; background: #ff99cc; border-radius: 50%; cursor: rotate; display: none; }
+        /* 修改：隐藏原来的旋转手柄 */
+        .sticker-rotate-handle { display: none; }
+        /* 新增：左上角旋转提示 */
+        .sticker-rotate-tip { position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; background: #ff99cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; cursor: grab; display: none; }
         /* 新增：翻转控制按钮 */
-        .sticker-flip-handle { position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; background: #ffb3d9; border-radius: 50%; cursor: pointer; display: none; }
+        .sticker-flip-handle { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; background: #ffb3d9; border-radius: 50%; cursor: pointer; display: none; }
         .sticker-item.editable .sticker-handle, 
-        .sticker-item.editable .sticker-rotate-handle,
-        .sticker-item.editable .sticker-flip-handle { display: block; }
+        .sticker-item.editable .sticker-rotate-tip,
+        .sticker-item.editable .sticker-flip-handle { display: flex; }
         /* 新增：翻转菜单 */
         .sticker-flip-menu { position: absolute; top: 30px; left: 5px; background: white; border-radius: 8px; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 10; display: none; }
         .flip-option { padding: 3px 8px; font-size: 12px; cursor: pointer; border-radius: 4px; }
@@ -351,6 +354,10 @@
             achieve: [],
             target: []
         };
+        
+        // 新增：旋转状态变量
+        let isRotating = false;
+        let rotateStartX, rotateStartY, rotateStartAngle = 0;
 
         // 激励语
         const quotes = [
@@ -1033,14 +1040,14 @@
                     sticker.innerHTML = `
                         <img src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;">
                         <div class="sticker-handle"></div>
-                        <div class="sticker-rotate-handle"></div>
+                        <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
                     `;
                 } else if (stickerData.type.startsWith("video/")) {
                     sticker.innerHTML = `
                         <video src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
                         <div class="sticker-handle"></div>
-                        <div class="sticker-rotate-handle"></div>
+                        <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
                     `;
                 }
@@ -1072,7 +1079,7 @@
                 container.appendChild(sticker);
                 initStickerDrag(sticker);
                 initStickerResize(sticker);
-                initStickerRotate(sticker);
+                initStickerRotateNew(sticker); // 修改：使用新的旋转初始化函数
             });
         }
 
@@ -1124,44 +1131,51 @@
             if (stickerEdit) openStickerFileSelector();
         });
 
-        // 翻转功能实现（兼容旋转）
-function flipSticker(sticker, direction) {
-    if (!sticker) return;
-    
-    // 获取当前transform样式
-    let currentTransform = sticker.style.transform || '';
-    
-    // 解析现有翻转状态和旋转
-    const hasScaleX = currentTransform.includes('scaleX(-1)');
-    const hasScaleY = currentTransform.includes('scaleY(-1)');
-    const rotateMatch = currentTransform.match(/rotate\(-?\d+(?:\.\d+)?deg\)/);
-    const rotate = rotateMatch ? rotateMatch[0] : '';
-    
-    // 清除原有翻转和旋转，保留其他transform
-    let newTransform = currentTransform
-        .replace(/scaleX\(-?1\)|scaleY\(-?1\)|rotate\(-?\d+(?:\.\d+)?deg\)/g, '')
-        .trim();
-    
-    // 添加翻转
-    if (direction === 'horizontal') {
-        newTransform += (newTransform ? ' ' : '') + (hasScaleX ? 'scaleX(1)' : 'scaleX(-1)');
-    } else if (direction === 'vertical') {
-        newTransform += (newTransform ? ' ' : '') + (hasScaleY ? 'scaleY(1)' : 'scaleY(-1)');
-    }
-    
-    // 加回旋转
-    if (rotate) {
-        newTransform += (newTransform ? ' ' : '') + rotate;
-    }
-    
-    sticker.style.transform = newTransform || 'none';
-}
+        // 翻转功能实现
+        function flipSticker(sticker, direction) {
+            if (!sticker) return;
+            
+            // 获取当前transform样式
+            let currentTransform = sticker.style.transform || 'none';
+            
+            // 解析当前的scaleX和scaleY值
+            let scaleX = 1, scaleY = 1, rotate = 0;
+            
+            // 提取现有的transform属性值
+            if (currentTransform !== 'none') {
+                // 匹配scaleX值
+                const scaleXMatch = currentTransform.match(/scaleX\(([-+]?\d*\.?\d+)\)/);
+                if (scaleXMatch) scaleX = parseFloat(scaleXMatch[1]);
+                
+                // 匹配scaleY值
+                const scaleYMatch = currentTransform.match(/scaleY\(([-+]?\d*\.?\d+)\)/);
+                if (scaleYMatch) scaleY = parseFloat(scaleYMatch[1]);
+                
+                // 匹配rotate值
+                const rotateMatch = currentTransform.match(/rotate\(([-+]?\d*\.?\d+)deg\)/);
+                if (rotateMatch) rotate = parseFloat(rotateMatch[1]);
+            }
+            
+            // 根据方向翻转
+            if (direction === 'horizontal') {
+                scaleX = scaleX * -1;
+            } else if (direction === 'vertical') {
+                scaleY = scaleY * -1;
+            }
+            
+            // 重新构建transform样式
+            let newTransform = '';
+            if (rotate !== 0) newTransform += `rotate(${rotate}deg) `;
+            newTransform += `scaleX(${scaleX}) scaleY(${scaleY})`;
+            
+            sticker.style.transform = newTransform.trim();
+        }
 
         // 绑定翻转按钮事件
         el("flipHorizontalBtn").addEventListener("click", () => {
             if (selectedSticker && stickerEdit) {
                 flipSticker(selectedSticker, 'horizontal');
-            } else {
+            } else if (!selectedSticker) {
                 alert("Please select a sticker first!");
             }
         });
@@ -1169,16 +1183,16 @@ function flipSticker(sticker, direction) {
         el("flipVerticalBtn").addEventListener("click", () => {
             if (selectedSticker && stickerEdit) {
                 flipSticker(selectedSticker, 'vertical');
-            } else {
+            } else if (!selectedSticker) {
                 alert("Please select a sticker first!");
             }
         });
 
-        // 添加贴纸到当前页面
+        // 添加贴纸
         function addSticker(file) {
             if (!stickerEdit) return;
             
-            const stickerId = `sticker_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const stickerId = `sticker_${Date.now()}`;
             const url = URL.createObjectURL(file);
             
             const sticker = document.createElement("div");
@@ -1203,14 +1217,14 @@ function flipSticker(sticker, direction) {
                 sticker.innerHTML = `
                     <img src="${url}" style="width: 100%; height: 100%; object-fit: contain;">
                     <div class="sticker-handle"></div>
-                    <div class="sticker-rotate-handle"></div>
+                    <div class="sticker-rotate-tip">↺</div>
                     <div class="sticker-flip-handle">🔄</div>
                 `;
             } else if (file.type.startsWith("video/")) {
                 sticker.innerHTML = `
                     <video src="${url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
                     <div class="sticker-handle"></div>
-                    <div class="sticker-rotate-handle"></div>
+                    <div class="sticker-rotate-tip">↺</div>
                     <div class="sticker-flip-handle">🔄</div>
                 `;
             }
@@ -1246,21 +1260,24 @@ function flipSticker(sticker, direction) {
             // 初始化贴纸交互
             initStickerDrag(sticker);
             initStickerResize(sticker);
-            initStickerRotate(sticker);
+            initStickerRotateNew(sticker);
             
             // 选中新添加的贴纸
             selectedSticker = sticker;
             sticker.style.outline = '2px solid #ff66b3';
+            
+            // 保存贴纸数据
+            savePageStickers(currentPageId);
         }
 
-        // 贴纸拖拽功能
+        // 初始化贴纸拖拽
         function initStickerDrag(sticker) {
             let isDragging = false;
             let startX, startY, startTop, startLeft;
             
             sticker.addEventListener("mousedown", (e) => {
                 if (!stickerEdit || e.target.classList.contains('sticker-handle') || 
-                    e.target.classList.contains('sticker-rotate-handle') || 
+                    e.target.classList.contains('sticker-rotate-tip') || 
                     e.target.classList.contains('sticker-flip-handle')) {
                     return;
                 }
@@ -1273,17 +1290,10 @@ function flipSticker(sticker, direction) {
                 startTop = parseFloat(sticker.style.top) || 0;
                 startLeft = parseFloat(sticker.style.left) || 0;
                 
-                // 提升层级
-                sticker.style.zIndex = 999;
+                // 设置鼠标样式
+                sticker.style.cursor = 'grabbing';
                 
-                // 选中当前贴纸
-                els('.sticker-item').forEach(s => {
-                    s.style.outline = 'none';
-                });
-                selectedSticker = sticker;
-                sticker.style.outline = '2px solid #ff66b3';
-                
-                // 阻止事件冒泡
+                // 阻止默认行为和冒泡
                 e.preventDefault();
                 e.stopPropagation();
             });
@@ -1291,9 +1301,11 @@ function flipSticker(sticker, direction) {
             document.addEventListener("mousemove", (e) => {
                 if (!isDragging || !stickerEdit) return;
                 
+                // 计算偏移量
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
                 
+                // 更新位置
                 sticker.style.top = `${startTop + dy}px`;
                 sticker.style.left = `${startLeft + dx}px`;
             });
@@ -1301,60 +1313,14 @@ function flipSticker(sticker, direction) {
             document.addEventListener("mouseup", () => {
                 if (isDragging) {
                     isDragging = false;
-                    sticker.style.zIndex = '';
-                }
-            });
-            
-            // 移动端支持
-            sticker.addEventListener("touchstart", (e) => {
-                if (!stickerEdit || e.target.classList.contains('sticker-handle') || 
-                    e.target.classList.contains('sticker-rotate-handle') || 
-                    e.target.classList.contains('sticker-flip-handle')) {
-                    return;
-                }
-                
-                isDragging = true;
-                const touch = e.touches[0];
-                startX = touch.clientX;
-                startY = touch.clientY;
-                
-                startTop = parseFloat(sticker.style.top) || 0;
-                startLeft = parseFloat(sticker.style.left) || 0;
-                
-                sticker.style.zIndex = 999;
-                
-                els('.sticker-item').forEach(s => {
-                    s.style.outline = 'none';
-                });
-                selectedSticker = sticker;
-                sticker.style.outline = '2px solid #ff66b3';
-                
-                e.preventDefault();
-                e.stopPropagation();
-            });
-            
-            document.addEventListener("touchmove", (e) => {
-                if (!isDragging || !stickerEdit) return;
-                
-                const touch = e.touches[0];
-                const dx = touch.clientX - startX;
-                const dy = touch.clientY - startY;
-                
-                sticker.style.top = `${startTop + dy}px`;
-                sticker.style.left = `${startLeft + dx}px`;
-                
-                e.preventDefault();
-            });
-            
-            document.addEventListener("touchend", () => {
-                if (isDragging) {
-                    isDragging = false;
-                    sticker.style.zIndex = '';
+                    sticker.style.cursor = 'move';
+                    // 保存贴纸位置
+                    savePageStickers(currentPageId);
                 }
             });
         }
 
-        // 贴纸缩放功能
+        // 初始化贴纸缩放
         function initStickerResize(sticker) {
             const handle = sticker.querySelector('.sticker-handle');
             if (!handle) return;
@@ -1368,13 +1334,10 @@ function flipSticker(sticker, direction) {
                 isResizing = true;
                 startX = e.clientX;
                 startY = e.clientY;
-                
                 startWidth = parseFloat(sticker.style.width) || 100;
                 startHeight = parseFloat(sticker.style.height) || 100;
                 
-                // 提升层级
-                sticker.style.zIndex = 999;
-                
+                // 阻止默认行为和冒泡
                 e.preventDefault();
                 e.stopPropagation();
             });
@@ -1382,14 +1345,15 @@ function flipSticker(sticker, direction) {
             document.addEventListener("mousemove", (e) => {
                 if (!isResizing || !stickerEdit) return;
                 
+                // 计算缩放比例
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
                 
-                // 保持宽高比
-                const aspectRatio = startWidth / startHeight;
+                // 限制最小尺寸
                 const newWidth = Math.max(50, startWidth + dx);
-                const newHeight = Math.max(50, newWidth / aspectRatio);
+                const newHeight = Math.max(50, startHeight + dy);
                 
+                // 更新尺寸
                 sticker.style.width = `${newWidth}px`;
                 sticker.style.height = `${newHeight}px`;
             });
@@ -1397,230 +1361,136 @@ function flipSticker(sticker, direction) {
             document.addEventListener("mouseup", () => {
                 if (isResizing) {
                     isResizing = false;
-                    sticker.style.zIndex = '';
+                    // 保存贴纸尺寸
+                    savePageStickers(currentPageId);
                 }
             });
+        }
+
+        // 初始化贴纸旋转（新方案）
+        function initStickerRotateNew(sticker) {
+            const rotateTip = sticker.querySelector('.sticker-rotate-tip');
+            if (!rotateTip) return;
             
-            // 移动端支持
-            handle.addEventListener("touchstart", (e) => {
+            rotateTip.addEventListener("mousedown", (e) => {
                 if (!stickerEdit) return;
                 
-                isResizing = true;
-                const touch = e.touches[0];
-                startX = touch.clientX;
-                startY = touch.clientY;
+                isRotating = true;
+                const rect = sticker.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
                 
-                startWidth = parseFloat(sticker.style.width) || 100;
-                startHeight = parseFloat(sticker.style.height) || 100;
+                // 计算初始角度
+                rotateStartX = e.clientX;
+                rotateStartY = e.clientY;
+                rotateStartAngle = getCurrentRotation(sticker);
                 
-                sticker.style.zIndex = 999;
-                
+                // 阻止默认行为和冒泡
                 e.preventDefault();
                 e.stopPropagation();
             });
             
-            document.addEventListener("touchmove", (e) => {
-                if (!isResizing || !stickerEdit) return;
+            document.addEventListener("mousemove", (e) => {
+                if (!isRotating || !stickerEdit) return;
                 
-                const touch = e.touches[0];
-                const dx = touch.clientX - startX;
-                const dy = touch.clientY - startY;
+                const rect = sticker.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
                 
-                const aspectRatio = startWidth / startHeight;
-                const newWidth = Math.max(50, startWidth + dx);
-                const newHeight = Math.max(50, newWidth / aspectRatio);
+                // 计算当前角度
+                const angle1 = Math.atan2(rotateStartY - centerY, rotateStartX - centerX);
+                const angle2 = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                const diff = (angle2 - angle1) * 180 / Math.PI;
                 
-                sticker.style.width = `${newWidth}px`;
-                sticker.style.height = `${newHeight}px`;
+                // 应用旋转
+                const newRotation = rotateStartAngle + diff;
+                applyRotation(sticker, newRotation);
                 
                 e.preventDefault();
             });
             
-            document.addEventListener("touchend", () => {
-                if (isResizing) {
-                    isResizing = false;
-                    sticker.style.zIndex = '';
+            document.addEventListener("mouseup", () => {
+                if (isRotating) {
+                    isRotating = false;
+                    // 保存贴纸旋转状态
+                    savePageStickers(currentPageId);
                 }
             });
         }
 
-        // 贴纸旋转功能（修复版）
-function initStickerRotate(sticker) {
-    const rotateHandle = sticker.querySelector('.sticker-rotate-handle');
-    if (!rotateHandle) return;
-
-    let isRotating = false;
-    let startX, startY, startAngle, currentAngle = 0;
-
-    // 解析当前旋转角度
-    function getRotationDegrees(el) {
-        const transform = el.style.transform || '';
-        if (!transform) return 0;
-        const match = transform.match(/rotate\((-?\d+(?:\.\d+)?)deg\)/);
-        return match ? parseFloat(match[1]) : 0;
-    }
-
-    // 计算两点之间的角度
-    function getAngleFromCenter(el, clientX, clientY) {
-        const rect = el.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        return Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-    }
-
-    rotateHandle.addEventListener('mousedown', (e) => {
-        if (!stickerEdit) return;
-        
-        e.preventDefault();
-        e.stopPropagation();
-        
-        isRotating = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startAngle = getRotationDegrees(sticker);
-        currentAngle = startAngle;
-        
-        // 提升层级
-        sticker.style.zIndex = 999;
-        
-        // 选中当前贴纸
-        document.querySelectorAll('.sticker-item').forEach(s => {
-            s.style.outline = 'none';
-        });
-        selectedSticker = sticker;
-        sticker.style.outline = '2px solid #ff66b3';
-    });
-
-    // 鼠标旋转逻辑
-    function handleRotateMove(e) {
-        if (!isRotating || !stickerEdit) return;
-        
-        const currentAngleFromCenter = getAngleFromCenter(sticker, e.clientX, e.clientY);
-        const startAngleFromCenter = getAngleFromCenter(sticker, startX, startY);
-        const angleDelta = currentAngleFromCenter - startAngleFromCenter;
-        currentAngle = startAngle + angleDelta;
-        
-        // 保留现有transform（缩放/翻转），只替换旋转
-        let transform = sticker.style.transform || '';
-        transform = transform.replace(/rotate\(-?\d+(?:\.\d+)?deg\)/g, '').trim();
-        if (transform && !transform.endsWith(' ')) transform += ' ';
-        
-        sticker.style.transform = `${transform}rotate(${currentAngle}deg)`;
-    }
-
-    function stopRotate() {
-        if (isRotating) {
-            isRotating = false;
-            sticker.style.zIndex = '';
+        // 获取当前旋转角度
+        function getCurrentRotation(el) {
+            const transform = el.style.transform;
+            if (!transform) return 0;
+            
+            const match = transform.match(/rotate\(([-+]?\d*\.?\d+)deg\)/);
+            return match ? parseFloat(match[1]) : 0;
         }
-    }
 
-    // 绑定鼠标事件
-    document.addEventListener('mousemove', handleRotateMove);
-    document.addEventListener('mouseup', stopRotate);
-    document.addEventListener('mouseleave', stopRotate);
-
-    // 移动端支持
-    rotateHandle.addEventListener('touchstart', (e) => {
-        if (!stickerEdit) return;
-        
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const touch = e.touches[0];
-        isRotating = true;
-        startX = touch.clientX;
-        startY = touch.clientY;
-        startAngle = getRotationDegrees(sticker);
-        currentAngle = startAngle;
-        
-        sticker.style.zIndex = 999;
-        
-        document.querySelectorAll('.sticker-item').forEach(s => {
-            s.style.outline = 'none';
-        });
-        selectedSticker = sticker;
-        sticker.style.outline = '2px solid #ff66b3';
-    });
-
-    // 触摸旋转逻辑
-    function handleTouchRotateMove(e) {
-        if (!isRotating || !stickerEdit) return;
-        
-        e.preventDefault();
-        const touch = e.touches[0];
-        const currentAngleFromCenter = getAngleFromCenter(sticker, touch.clientX, touch.clientY);
-        const startAngleFromCenter = getAngleFromCenter(sticker, startX, startY);
-        const angleDelta = currentAngleFromCenter - startAngleFromCenter;
-        currentAngle = startAngle + angleDelta;
-        
-        let transform = sticker.style.transform || '';
-        transform = transform.replace(/rotate\(-?\d+(?:\.\d+)?deg\)/g, '').trim();
-        if (transform && !transform.endsWith(' ')) transform += ' ';
-        
-        sticker.style.transform = `${transform}rotate(${currentAngle}deg)`;
-    }
-
-    // 绑定触摸事件
-    document.addEventListener('touchmove', handleTouchRotateMove);
-    document.addEventListener('touchend', stopRotate);
-    document.addEventListener('touchcancel', stopRotate);
-}
+        // 应用旋转角度
+        function applyRotation(el, angle) {
+            // 保留其他transform属性（如scaleX/scaleY）
+            let transform = el.style.transform || '';
+            
+            // 移除现有的rotate
+            transform = transform.replace(/rotate\([-+]?\d*\.?\d+deg\)/g, '').trim();
+            
+            // 添加新的rotate
+            if (transform) {
+                el.style.transform = `rotate(${angle}deg) ${transform}`;
+            } else {
+                el.style.transform = `rotate(${angle}deg)`;
+            }
+        }
 
         // 完成贴纸编辑
-        function finishSticker(save = true) {
-            if (save) {
-                // 保存当前页面的贴纸状态
+        function finishSticker(confirm = false) {
+            if (confirm) {
+                // 保存贴纸状态
                 savePageStickers(currentPageId);
+                
+                // 移除编辑状态
+                const container = el(`stickerContainer_${currentPageId}`);
+                container.querySelectorAll('.sticker-item').forEach(sticker => {
+                    sticker.classList.remove('editable');
+                    sticker.style.outline = 'none';
+                });
+                
+                // 重置状态
+                stickerEdit = false;
+                selectedSticker = null;
+                
+                // 更新UI
+                el("stickerButton").textContent = "🍪";
+                el("stickerButton").style.backgroundColor = "#ff66b3";
+                el("stickerToolbar").style.display = "none";
             }
             
-            // 退出编辑模式
-            stickerEdit = false;
-            el("stickerButton").textContent = "🍪";
-            el("stickerButton").style.backgroundColor = "#ff66b3";
-            el("stickerToolbar").style.display = "none";
-            
-            // 移除所有贴纸的编辑状态
-            const container = el(`stickerContainer_${currentPageId}`);
-            container.querySelectorAll('.sticker-item').forEach(sticker => {
-                sticker.classList.remove('editable');
-                sticker.style.outline = 'none';
-                sticker.style.pointerEvents = 'none';
-            });
-            
-            selectedSticker = null;
+            // 关闭确认弹窗
+            closeModal("stickerConfirmModal", "stickerConfirmOverlay");
         }
 
-        // 确认完成贴纸编辑
-        el("confirmStickerBtn").addEventListener("click", () => {
-            finishSticker(true);
-            closeModal("stickerConfirmModal", "stickerConfirmOverlay");
-            alert("✨ Sticker changes saved successfully!");
-        });
-
-        // 取消贴纸编辑
-        el("cancelStickerBtn").addEventListener("click", () => {
-            finishSticker(false);
-            // 重新加载贴纸恢复到之前的状态
-            loadPageStickers(currentPageId);
-            closeModal("stickerConfirmModal", "stickerConfirmOverlay");
-        });
+        // 绑定贴纸确认/取消按钮
+        el("confirmStickerBtn").addEventListener("click", () => finishSticker(true));
+        el("cancelStickerBtn").addEventListener("click", () => finishSticker(false));
 
         // 初始化页面
         window.addEventListener("DOMContentLoaded", () => {
-            // 初始显示首页
+            // 默认显示首页
             navigateTo('home');
             
             // 点击空白处取消贴纸选中
             document.addEventListener("click", (e) => {
-                if (stickerEdit && !e.target.closest('.sticker-item')) {
-                    els('.sticker-item').forEach(s => {
-                        s.style.outline = 'none';
-                    });
-                    selectedSticker = null;
+                if (stickerEdit && !e.target.closest('.sticker-item') && !e.target.closest('.sticker-toolbar')) {
+                    if (selectedSticker) {
+                        selectedSticker.style.outline = 'none';
+                        selectedSticker = null;
+                    }
                 }
             });
         });
     </script>
 </body>
 </html>
+
+    
