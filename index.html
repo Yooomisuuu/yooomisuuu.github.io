@@ -61,7 +61,8 @@
         .target-delete-btn:hover { background: #ff3333; }
         
         /* 弹窗样式 */
-        .login-modal, .create-folder-modal, .exit-edit-modal, .target-modal, .folder-page-modal, .sticker-confirm-modal, .achievement-image-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 0 20px rgba(255, 102, 179, 0.3); z-index: 1000; width: 90%; max-width: 500px; }
+        .login-modal, .create-folder-modal, .exit-edit-modal, .target-modal, .folder-page-modal, .sticker-confirm-modal, .achievement-image-modal, .delete-sticker-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 0 20px rgba(255, 102, 179, 0.3); z-index: 1000; width: 90%; max-width: 500px; }
+        .delete-sticker-modal { max-width: 400px; }
         .achievement-image-modal { max-width: 700px; text-align: center; }
         .sticker-confirm-modal { max-width: 400px; }
         .folder-page-modal { max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; }
@@ -71,10 +72,10 @@
         /* 弹窗控件 */
         .login-modal input, .create-folder-modal input, .target-modal input, .target-modal textarea { margin: 0.5rem 0; padding: 10px 15px; width: 100%; border: 2px solid #ffb3d9; border-radius: 15px; outline: none; color: #5a2e48; }
         .target-modal textarea { min-height: 150px; resize: vertical; font-family: inherit; }
-        .confirmBtn, .saveTargetBtn, .confirmCreateFolderBtn, .upload-media-btn, .confirmStickerBtn, .confirmAchievementBtn { background: #ff66b3; color: white; border: none; border-radius: 15px; padding: 10px 20px; cursor: pointer; margin-right: 10px; transition: all 0.3s ease; }
-        .cancelBtn, .cancelTargetBtn, .cancelCreateFolderBtn, .close-folder-page, .cancelStickerBtn, .cancelAchievementBtn { background: #ffb3d9; color: white; border: none; border-radius: 15px; padding: 10px 20px; cursor: pointer; transition: all 0.3s ease; }
-        .confirmBtn:hover, .saveTargetBtn:hover, .confirmCreateFolderBtn:hover, .upload-media-btn:hover, .confirmStickerBtn:hover, .confirmAchievementBtn:hover { background: #ff3399; transform: scale(1.05); }
-        .cancelBtn:hover, .cancelTargetBtn:hover, .cancelCreateFolderBtn:hover, .close-folder-page:hover, .cancelStickerBtn:hover, .cancelAchievementBtn:hover { background: #ff99cc; transform: scale(1.05); }
+        .confirmBtn, .saveTargetBtn, .confirmCreateFolderBtn, .upload-media-btn, .confirmStickerBtn, .confirmAchievementBtn, .confirmDeleteStickerBtn { background: #ff66b3; color: white; border: none; border-radius: 15px; padding: 10px 20px; cursor: pointer; margin-right: 10px; transition: all 0.3s ease; }
+        .cancelBtn, .cancelTargetBtn, .cancelCreateFolderBtn, .close-folder-page, .cancelStickerBtn, .cancelAchievementBtn, .cancelDeleteStickerBtn { background: #ffb3d9; color: white; border: none; border-radius: 15px; padding: 10px 20px; cursor: pointer; transition: all 0.3s ease; }
+        .confirmBtn:hover, .saveTargetBtn:hover, .confirmCreateFolderBtn:hover, .upload-media-btn:hover, .confirmStickerBtn:hover, .confirmAchievementBtn:hover, .confirmDeleteStickerBtn:hover { background: #ff3399; transform: scale(1.05); }
+        .cancelBtn:hover, .cancelTargetBtn:hover, .cancelCreateFolderBtn:hover, .close-folder-page:hover, .cancelStickerBtn:hover, .cancelAchievementBtn:hover, .cancelDeleteStickerBtn:hover { background: #ff99cc; transform: scale(1.05); }
         
         /* 文件夹图标上传 */
         .folder-icon-upload { margin: 1rem 0; padding: 1rem; border: 2px dashed #ffb3d9; border-radius: 15px; text-align: center; cursor: pointer; }
@@ -99,11 +100,25 @@
         /* 贴纸样式 */
         .sticker-button { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #ff66b3; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 102, 179, 0.3); z-index: 900; transition: all 0.3s ease; }
         .sticker-button:hover { background: #ff3399; transform: scale(1.1); }
+        /* 新增：贴纸编辑工具栏 */
+        .sticker-toolbar { position: fixed; bottom: 100px; right: 30px; background: white; border-radius: 15px; padding: 10px; box-shadow: 0 4px 15px rgba(255, 102, 179, 0.3); z-index: 899; display: none; }
+        .sticker-tool-btn { padding: 5px 10px; border: none; border-radius: 8px; cursor: pointer; margin: 5px; background: #ffb3d9; color: white; font-size: 12px; transition: all 0.2s ease; }
+        .sticker-tool-btn:hover { background: #ff66b3; transform: scale(1.05); }
         .sticker-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 800; }
-        .sticker-item { position: absolute; cursor: move; pointer-events: all; transform-origin: center center; transition: all 0.1s ease; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .sticker-item { position: absolute; cursor: move; pointer-events: all; transform-origin: center center; transition: all 0.1s ease; border-radius: 8px; overflow: hidden; /* 移除贴纸边框和阴影 */ box-shadow: none; border: none; }
         .sticker-handle { position: absolute; bottom: 5px; right: 5px; width: 20px; height: 20px; background: #ff66b3; border-radius: 50%; cursor: nwse-resize; display: none; }
         .sticker-rotate-handle { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; background: #ff99cc; border-radius: 50%; cursor: rotate; display: none; }
-        .sticker-item.editable .sticker-handle, .sticker-item.editable .sticker-rotate-handle { display: block; }
+        /* 新增：翻转控制按钮 */
+        .sticker-flip-handle { position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; background: #ffb3d9; border-radius: 50%; cursor: pointer; display: none; }
+        .sticker-item.editable .sticker-handle, 
+        .sticker-item.editable .sticker-rotate-handle,
+        .sticker-item.editable .sticker-flip-handle { display: block; }
+        /* 新增：翻转菜单 */
+        .sticker-flip-menu { position: absolute; top: 30px; left: 5px; background: white; border-radius: 8px; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 10; display: none; }
+        .flip-option { padding: 3px 8px; font-size: 12px; cursor: pointer; border-radius: 4px; }
+        .flip-option:hover { background: #ffe6f2; }
+        /* 移除贴纸内图片/视频的边框和圆角 */
+        .sticker-item img, .sticker-item video { border: none !important; border-radius: 0 !important; outline: none !important; }
         
         /* 响应式 */
         @media (max-width: 768px) {
@@ -156,6 +171,17 @@
         <div style="display: flex; justify-content: center; gap: 10px;">
             <button id="confirmStickerBtn" class="confirmStickerBtn">Yes</button>
             <button id="cancelStickerBtn" class="cancelStickerBtn">No</button>
+        </div>
+    </div>
+
+    <!-- 新增：删除贴纸确认弹窗 -->
+    <div class="overlay" id="deleteStickerOverlay"></div>
+    <div class="delete-sticker-modal" id="deleteStickerModal">
+        <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Delete Sticker?</h3>
+        <p style="text-align: center; margin-bottom: 1rem; color: #5a2e48;">Are you sure you want to delete this sticker?</p>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <button id="confirmDeleteStickerBtn" class="confirmDeleteStickerBtn">Yes</button>
+            <button id="cancelDeleteStickerBtn" class="cancelDeleteStickerBtn">No</button>
         </div>
     </div>
 
@@ -293,8 +319,13 @@
         </div>
     </div>
 
-    <!-- 贴纸按钮 -->
+    <!-- 贴纸按钮和新增的工具栏 -->
     <div class="sticker-button" id="stickerButton">🍪</div>
+    <div class="sticker-toolbar" id="stickerToolbar">
+        <button class="sticker-tool-btn" id="addNewStickerBtn">➕ Add Sticker</button>
+        <button class="sticker-tool-btn" id="flipHorizontalBtn">↔️ Horizontal</button>
+        <button class="sticker-tool-btn" id="flipVerticalBtn">↕️ Vertical</button>
+    </div>
 
     <script>
         // 核心变量
@@ -303,6 +334,9 @@
         let isAdmin = true, currMedia = "", currFolder = "", editTargetId = null, stickerEdit = false;
         let folderIcons = {}, folderNames = {}, folderContents = {}, targets = [];
         let idCounter = 1;
+        // 新增：存储当前要删除的贴纸和选中的贴纸
+        let currentDeleteSticker = null;
+        let selectedSticker = null;
 
         // 激励语
         const quotes = [
@@ -396,6 +430,20 @@
         el("targetOverlay").addEventListener("click", () => {
             closeModal("targetModal", "targetOverlay");
             editTargetId = null;
+        });
+
+        // 新增：删除贴纸弹窗相关事件绑定
+        el("deleteStickerOverlay").addEventListener("click", () => closeModal("deleteStickerModal", "deleteStickerOverlay"));
+        el("cancelDeleteStickerBtn").addEventListener("click", () => {
+            closeModal("deleteStickerModal", "deleteStickerOverlay");
+            currentDeleteSticker = null;
+        });
+        el("confirmDeleteStickerBtn").addEventListener("click", () => {
+            if (currentDeleteSticker) {
+                currentDeleteSticker.remove();
+                currentDeleteSticker = null;
+            }
+            closeModal("deleteStickerModal", "deleteStickerOverlay");
         });
 
         // 打开创建文件夹弹窗
@@ -862,25 +910,93 @@
             el("profileInfo").style.fontFamily = el("profileFont").value;
         });
 
-        // 贴纸功能
+        // 贴纸功能 - 核心修改
         el("stickerButton").addEventListener("click", () => {
             if (!stickerEdit) {
+                // 进入编辑模式
                 stickerEdit = true;
                 el("stickerButton").textContent = "✅";
                 el("stickerButton").style.backgroundColor = "#ff3399";
+                el("stickerToolbar").style.display = "block"; // 显示工具栏
                 
-                const input = document.createElement("input");
-                input.type = "file";
-                input.accept = "image/*,video/*";
-                input.click();
-                
-                input.addEventListener("change", (e) => {
-                    const file = e.target.files[0];
-                    if (file && stickerEdit) addSticker(file);
+                // 把所有现有贴纸设为可编辑
+                els('.sticker-item').forEach(sticker => {
+                    sticker.classList.add('editable');
+                    sticker.style.pointerEvents = 'all';
                 });
+                
+                // 首次打开时默认打开文件选择器添加新贴纸
+                openStickerFileSelector();
             } else {
+                // 完成编辑
                 el("stickerConfirmModal").style.display = "block";
                 el("stickerConfirmOverlay").style.display = "block";
+            }
+        });
+
+        // 新增：打开贴纸文件选择器
+        function openStickerFileSelector() {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*,video/*";
+            input.multiple = true; // 支持多选
+            input.click();
+            
+            input.addEventListener("change", (e) => {
+                const files = e.target.files;
+                if (files && stickerEdit) {
+                    // 批量添加贴纸
+                    Array.from(files).forEach(file => addSticker(file));
+                }
+            });
+        }
+
+        // 新增：绑定添加新贴纸按钮
+        el("addNewStickerBtn").addEventListener("click", () => {
+            if (stickerEdit) openStickerFileSelector();
+        });
+
+        // 新增：翻转功能实现
+        function flipSticker(sticker, direction) {
+            if (!sticker) return;
+            
+            // 获取当前transform样式
+            let currentTransform = sticker.style.transform || 'none';
+            
+            // 解析现有翻转状态
+            const hasScaleX = currentTransform.includes('scaleX(-1)');
+            const hasScaleY = currentTransform.includes('scaleY(-1)');
+            
+            // 构建新的transform
+            let newTransform = currentTransform.replace(/scaleX\(-?1\)|scaleY\(-?1\)/g, '').trim();
+            if (newTransform === 'none') newTransform = '';
+            
+            if (direction === 'horizontal') {
+                // 水平翻转（左右）
+                newTransform += (newTransform ? ' ' : '') + (hasScaleX ? 'scaleX(1)' : 'scaleX(-1)');
+            } else if (direction === 'vertical') {
+                // 垂直翻转（上下）
+                newTransform += (newTransform ? ' ' : '') + (hasScaleY ? 'scaleY(1)' : 'scaleY(-1)');
+            }
+            
+            sticker.style.transform = newTransform || 'none';
+        }
+
+        // 新增：绑定水平翻转按钮
+        el("flipHorizontalBtn").addEventListener("click", () => {
+            if (selectedSticker) {
+                flipSticker(selectedSticker, 'horizontal');
+            } else {
+                alert("Please select a sticker first (click on a sticker to select it)");
+            }
+        });
+
+        // 新增：绑定垂直翻转按钮
+        el("flipVerticalBtn").addEventListener("click", () => {
+            if (selectedSticker) {
+                flipSticker(selectedSticker, 'vertical');
+            } else {
+                alert("Please select a sticker first (click on a sticker to select it)");
             }
         });
 
@@ -896,24 +1012,56 @@
                 sticker.style.width = "150px";
                 sticker.style.height = "150px";
                 
+                // 新增：贴纸选中逻辑
+                sticker.addEventListener("click", (e) => {
+                    if (!stickerEdit) return;
+                    e.stopPropagation();
+                    
+                    // 取消其他贴纸的选中状态
+                    els('.sticker-item').forEach(s => {
+                        s.style.outline = 'none';
+                    });
+                    
+                    // 设置当前贴纸为选中状态
+                    selectedSticker = sticker;
+                    sticker.style.outline = '2px solid #ff66b3';
+                });
+                
                 if (file.type.startsWith("image/")) {
                     sticker.innerHTML = `
                         <img src="${url}" style="width: 100%; height: 100%; object-fit: contain;">
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-handle"></div>
+                        <div class="sticker-flip-handle">🔄</div>
                     `;
                 } else if (file.type.startsWith("video/")) {
                     sticker.innerHTML = `
                         <video src="${url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-handle"></div>
+                        <div class="sticker-flip-handle">🔄</div>
                     `;
                 }
+                
+                // 新增：添加双击事件
+                sticker.addEventListener("dblclick", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentDeleteSticker = sticker;
+                    el("deleteStickerModal").style.display = "block";
+                    el("deleteStickerOverlay").style.display = "block";
+                });
                 
                 el("stickerContainer").appendChild(sticker);
                 initStickerDrag(sticker);
                 initStickerResize(sticker);
                 initStickerRotate(sticker);
+                
+                // 默认选中新添加的贴纸
+                selectedSticker = sticker;
+                els('.sticker-item').forEach(s => {
+                    s.style.outline = s === sticker ? '2px solid #ff66b3' : 'none';
+                });
             };
             reader.readAsDataURL(file);
         }
@@ -923,7 +1071,9 @@
             let dragging = false, ox, oy;
             
             sticker.addEventListener("mousedown", (e) => {
-                if (e.target.classList.contains('sticker-handle') || e.target.classList.contains('sticker-rotate-handle')) return;
+                if (e.target.classList.contains('sticker-handle') || 
+                    e.target.classList.contains('sticker-rotate-handle') ||
+                    e.target.classList.contains('sticker-flip-handle')) return;
                 
                 dragging = true;
                 const rect = sticker.getBoundingClientRect();
@@ -995,7 +1145,13 @@
                 return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
             };
             
-            const getAngle = (cx, cy, ex, ey) => Math.atan2(ey - cy, ex - cx) * 180 / Math.PI;
+                        const getAngle = (cx, cy, ex, ey) => {
+                const dy = ey - cy;
+                const dx = ex - cx;
+                let theta = Math.atan2(dy, dx);
+                theta *= 180 / Math.PI;
+                return theta;
+            };
             
             handle.addEventListener("mousedown", (e) => {
                 e.preventDefault();
@@ -1003,14 +1159,23 @@
                 
                 rotating = true;
                 const center = getCenter(sticker);
-                sAngle = getAngle(center.x, center.y, e.clientX, e.clientY) - cAngle;
+                sAngle = getAngle(center.x, center.y, e.clientX, e.clientY);
+                
+                // 获取当前旋转角度
+                const transform = sticker.style.transform || '';
+                const rotateMatch = transform.match(/rotate\((\d+)deg\)/);
+                cAngle = rotateMatch ? parseInt(rotateMatch[1]) : 0;
                 
                 const move = (e) => {
                     if (!rotating) return;
                     const center = getCenter(sticker);
-                    const nAngle = getAngle(center.x, center.y, e.clientX, e.clientY) - sAngle;
-                    cAngle = nAngle;
-                    sticker.style.transform = `rotate(${cAngle}deg)`;
+                    const newAngle = getAngle(center.x, center.y, e.clientX, e.clientY);
+                    const diff = newAngle - sAngle;
+                    const total = cAngle + diff;
+                    
+                    // 保留现有transform属性（如翻转），只更新旋转角度
+                    let newTransform = transform.replace(/rotate\(\d+deg\)/, '') + ` rotate(${total}deg)`;
+                    sticker.style.transform = newTransform.trim() || 'none';
                 };
                 
                 const up = () => {
@@ -1025,53 +1190,52 @@
         }
 
         // 完成贴纸编辑
-        function finishSticker(cancel = false) {
-            if (cancel) {
-                els('.sticker-item.editable').forEach(s => s.remove());
-            } else {
-                els('.sticker-item.editable').forEach(s => {
-                    s.classList.remove('editable');
-                    s.querySelector('.sticker-handle').style.display = 'none';
-                    s.querySelector('.sticker-rotate-handle').style.display = 'none';
-                });
-            }
-            
+        function finishSticker(force = false) {
             stickerEdit = false;
             el("stickerButton").textContent = "🍪";
             el("stickerButton").style.backgroundColor = "#ff66b3";
+            el("stickerToolbar").style.display = "none";
+            
+            // 移除所有贴纸的可编辑状态
+            els('.sticker-item').forEach(sticker => {
+                sticker.classList.remove('editable');
+                sticker.style.pointerEvents = 'auto'; // 保留点击交互但移除编辑手柄
+                sticker.style.outline = 'none'; // 清除选中状态
+            });
+            
+            selectedSticker = null;
+            if (!force) {
+                closeModal("stickerConfirmModal", "stickerConfirmOverlay");
+                alert("✨ Sticker changes saved successfully!");
+            }
         }
 
-        // 确认贴纸编辑
-        el("confirmStickerBtn").addEventListener("click", () => {
-            closeModal("stickerConfirmModal", "stickerConfirmOverlay");
-            finishSticker(false);
-            alert("Stickers saved successfully!");
-        });
-
-        // 取消贴纸编辑
+        // 确认完成贴纸编辑
+        el("confirmStickerBtn").addEventListener("click", () => finishSticker());
+        
+        // 取消完成贴纸编辑
         el("cancelStickerBtn").addEventListener("click", () => {
             closeModal("stickerConfirmModal", "stickerConfirmOverlay");
-            finishSticker(true);
         });
 
-        // 初始化
-        function init() {
+        // 初始化页面
+        window.addEventListener("DOMContentLoaded", () => {
+            // 默认显示首页
             navigateTo('home');
-            renderTargets();
-            el("profileInfo").style.color = el("profileTextColor").value;
-            el("profileInfo").style.fontFamily = el("profileFont").value;
             
-            // ESC关闭所有弹窗
-            document.addEventListener("keydown", (e) => {
-                if (e.key === "Escape") {
-                    els(".modal, .overlay").forEach(e => e.style.display = "none");
-                    if (stickerEdit) finishSticker(true);
-                }
-            });
-        }
-
-        // 页面加载完成初始化
-        window.addEventListener("DOMContentLoaded", init);
+            // 默认显示管理员编辑模式的所有按钮
+            if (isAdmin) {
+                els(".add-folder-btn").forEach(e => e.style.display = "inline-block");
+                el("addTargetBtn").style.display = "inline-block";
+                el("stickerButton").style.display = "flex";
+                el("profileEditTools").style.display = "block";
+                el("profileInfo").contentEditable = true;
+                el("profileInfo").style.cursor = "text";
+                els(".delete-folder, .delete-file").forEach(e => e.style.display = "flex");
+                els(".target-edit-btn, .target-delete-btn").forEach(e => e.style.display = "inline-block");
+            }
+        });
     </script>
 </body>
 </html>
+            
