@@ -6,477 +6,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yomi's World</title>
     <style>
-        /* 全局样式 - 适配粉色可爱风格 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Comic Sans MS", "Arial Rounded MT Bold", sans-serif;
-        }
-
-        body {
-            background-color: #ffe6f2;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path fill="%23ffb3d9" fill-opacity="0.2" d="M30,10 Q50,0 70,10 Q90,20 90,40 Q90,60 70,70 Q50,80 30,70 Q10,60 10,40 Q10,20 30,10 Z"/></svg>');
-            color: #5a2e48;
-            overflow-x: hidden;
-        }
-
-        /* 侧边导航栏 - 核心布局变更 */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            width: 220px;
-            background-color: #ff99cc;
-            padding: 30px 15px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            z-index: 999;
-        }
-
-        .sidebar h2 {
-            color: white;
-            text-align: center;
-            margin-bottom: 40px;
-            font-size: 20px;
-            text-shadow: 1px 1px 2px #ff66b3;
-        }
-
-        .sidebar-btn {
-            display: block;
-            width: 100%;
-            padding: 12px 15px;
-            margin: 10px 0;
-            background-color: white;
-            border: none;
-            border-radius: 20px;
-            color: #ff66b3;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .sidebar-btn:hover {
-            background-color: #ff66b3;
-            color: white;
-            transform: translateX(5px);
-        }
-
-        /* 登录按钮 - 移到侧边栏顶部 */
-        .login-section {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .login-btn {
-            padding: 10px 15px;
-            background-color: #ff66b3;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .login-btn:hover {
-            background-color: #ff3399;
-            transform: scale(1.05);
-        }
-
-        /* 主内容区域 */
-        .main-content {
-            margin-left: 220px;
-            padding: 40px;
-            min-height: 100vh;
-        }
-
-        /* 页面标题样式 */
-        .page-title {
-            color: #ff66b3;
-            font-size: 26px;
-            margin-bottom: 30px;
-            text-align: center;
-            text-shadow: 1px 1px 3px #ffb3d9;
-        }
-
-        /* 内容盒子样式 - 适配新风格 */
-        .content-section {
-            background-color: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(255, 102, 179, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            color: #ff66b3;
-            font-size: 20px;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #ffb3d9;
-            padding-bottom: 0.5rem;
-            text-shadow: 1px 1px 2px #ffd6e8;
-        }
-
-        /* 单个加号按钮样式 - 每个section只有一个 */
-        .add-folder-btn {
-            margin: 1rem 0;
-            padding: 10px 20px;
-            background-color: #ff66b3;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: none; /* 仅管理员可见 */
-        }
-
-        .add-folder-btn:hover {
-            background-color: #ff3399;
-            transform: scale(1.05);
-        }
-
-        /* 文件/文件夹管理样式 - 仿电脑文件夹样式 */
-        .media-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
-            padding: 1rem;
-            background-color: #fff8fc;
-            border-radius: 15px;
-            border: 1px solid #ffd6e8;
-        }
-
-        /* 仿电脑文件夹样式 */
-        .folder-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem;
-            border-radius: 12px;
-            background-color: #fff;
-            border: 1px solid #ffd6e8;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            height: 160px;
-            justify-content: center;
-        }
-
-        .folder-item:hover {
-            background-color: #fff0f7;
-            border-color: #ff66b3;
-            box-shadow: 0 4px 12px rgba(255, 102, 179, 0.15);
-        }
-
-        .folder-icon {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-            margin-bottom: 0.8rem;
-            border-radius: 8px;
-        }
-
-        .folder-name {
-            width: 100%;
-            text-align: center;
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #5a2e48;
-            word-break: break-word;
-            margin-bottom: 0.5rem;
-            max-height: 40px;
-            overflow: hidden;
-        }
-
-        /* 编辑文件夹名称时的样式 - 仿系统 */
-        .folder-name[contenteditable="true"]:focus {
-            outline: 2px solid #ff66b3;
-            background-color: #fff;
-        }
-
-        /* 删除按钮样式 - 显眼且固定位置 */
-        .delete-folder, .delete-file {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #ff6666;
-            color: white;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 12px;
-            opacity: 0.8;
-            display: none; /* 默认隐藏，管理员可见 */
-        }
-
-        .delete-folder:hover, .delete-file:hover {
-            background: #ff3333;
-            transform: scale(1.1);
-            opacity: 1;
-        }
-
-        /* 文件样式 */
-        .file-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem;
-            border-radius: 12px;
-            background-color: #fff;
-            border: 1px solid #ffd6e8;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            height: 160px;
-            justify-content: center;
-        }
-
-        .file-item:hover {
-            background-color: #fff0f7;
-            border-color: #ff66b3;
-            box-shadow: 0 4px 12px rgba(255, 102, 179, 0.15);
-        }
-
-        .file-icon {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-            margin-bottom: 0.8rem;
-            border-radius: 8px;
-        }
-
-        .file-name {
-            width: 100%;
-            text-align: center;
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #5a2e48;
-            word-break: break-word;
-            max-height: 40px;
-            overflow: hidden;
-        }
-
-        /* 个人目标样式 */
-        .personal-target {
-            position: relative;
-        }
-
-        .add-target-btn {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            display: none; /* 仅管理员可见 */
-            padding: 10px 20px;
-            background-color: #ff66b3;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .add-target-btn:hover {
-            background-color: #ff3399;
-            transform: scale(1.05);
-        }
-
-        /* 弹窗样式 - 适配粉色风格 */
-        .login-modal, .create-folder-modal, .exit-edit-modal, .target-modal, .folder-page-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(255, 102, 179, 0.3);
-            z-index: 1000;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        /* 文件夹详情页面弹窗（新网页） */
-        .folder-page-modal {
-            max-width: 800px;
-            width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 153, 204, 0.5);
-            z-index: 999;
-        }
-
-        /* 弹窗内控件样式 */
-        .login-modal input, .create-folder-modal input, .target-modal input {
-            margin: 0.5rem 0;
-            padding: 10px 15px;
-            width: 100%;
-            border: 2px solid #ffb3d9;
-            border-radius: 15px;
-            outline: none;
-            color: #5a2e48;
-        }
-
-        .confirmBtn, .saveTargetBtn, .confirmCreateFolderBtn, .upload-media-btn {
-            background-color: #ff66b3;
-            color: white;
-            border: none;
-            border-radius: 15px;
-            padding: 10px 20px;
-            cursor: pointer;
-            margin-right: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .cancelBtn, .cancelTargetBtn, .cancelCreateFolderBtn, .close-folder-page {
-            background-color: #ffb3d9;
-            color: white;
-            border: none;
-            border-radius: 15px;
-            padding: 10px 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .confirmBtn:hover, .saveTargetBtn:hover, .confirmCreateFolderBtn:hover, .upload-media-btn:hover {
-            background-color: #ff3399;
-            transform: scale(1.05);
-        }
-
-        .cancelBtn:hover, .cancelTargetBtn:hover, .cancelCreateFolderBtn:hover, .close-folder-page:hover {
-            background-color: #ff99cc;
-            transform: scale(1.05);
-        }
-
-        /* 文件夹图标上传区域 */
-        .folder-icon-upload {
-            margin: 1rem 0;
-            padding: 1rem;
-            border: 2px dashed #ffb3d9;
-            border-radius: 15px;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .folder-icon-upload:hover {
-            border-color: #ff66b3;
-            background-color: #fff0f7;
-        }
-
-        .icon-preview {
-            width: 80px;
-            height: 80px;
-            margin: 1rem auto;
-            border-radius: 10px;
-            object-fit: contain;
-            background-color: #fff8fc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ff66b3;
-            font-size: 30px;
-        }
-
-        /* 响应式适配 */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 180px;
-            }
-            .main-content {
-                margin-left: 180px;
-                padding: 20px;
-            }
-            .media-section {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            }
-            .home-container {
-                flex-direction: column;
-                text-align: center;
-            }
-            .character-img {
-                margin: 0 auto 2rem;
-            }
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Comic Sans MS", "Arial Rounded MT Bold", sans-serif; }
+        body { background: #ffe6f2 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path fill="%23ffb3d9" fill-opacity="0.2" d="M30,10 Q50,0 70,10 Q90,20 90,40 Q90,60 70,70 Q50,80 30,70 Q10,60 10,40 Q10,20 30,10 Z"/></svg>'); color: #5a2e48; overflow-x: hidden; position: relative; }
+        
+        /* 侧边栏 */
+        .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: 220px; background: #ff99cc; padding: 30px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 999; }
+        .sidebar h2 { color: white; text-align: center; margin-bottom: 40px; font-size: 20px; text-shadow: 1px 1px 2px #ff66b3; }
+        .sidebar-btn { display: block; width: 100%; padding: 12px 15px; margin: 10px 0; background: white; border: none; border-radius: 20px; color: #ff66b3; font-size: 14px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .sidebar-btn:hover { background: #ff66b3; color: white; transform: translateX(5px); }
+        
+        /* 登录区域 */
+        .login-section { text-align: center; margin-bottom: 20px; }
+        .login-btn { padding: 10px 15px; background: #ff66b3; color: white; border: none; border-radius: 20px; cursor: pointer; width: 100%; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .login-btn:hover { background: #ff3399; transform: scale(1.05); }
+        
+        /* 主内容区 */
+        .main-content { margin-left: 220px; padding: 40px; min-height: 100vh; position: relative; }
+        .page-title { color: #ff66b3; font-size: 26px; margin-bottom: 30px; text-align: center; text-shadow: 1px 1px 3px #ffb3d9; }
+        .content-section { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 15px rgba(255, 102, 179, 0.1); margin-bottom: 30px; }
+        .section-title { color: #ff66b3; font-size: 20px; margin-bottom: 1rem; border-bottom: 2px solid #ffb3d9; padding-bottom: 0.5rem; text-shadow: 1px 1px 2px #ffd6e8; }
+        
+        /* 按钮样式 */
+        .add-folder-btn, .add-target-btn { display: none; padding: 10px 20px; background: #ff66b3; color: white; border: none; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .add-folder-btn:hover, .add-target-btn:hover { background: #ff3399; transform: scale(1.05); }
+        .add-target-btn { position: absolute; top: 25px; right: 25px; }
+        
+        /* 文件夹/文件样式 */
+        .media-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 1rem; padding: 1rem; background: #fff8fc; border-radius: 15px; border: 1px solid #ffd6e8; }
+        .folder-item, .file-item { display: flex; flex-direction: column; align-items: center; padding: 1rem; border-radius: 12px; background: #fff; border: 1px solid #ffd6e8; cursor: pointer; transition: all 0.2s ease; position: relative; height: 160px; justify-content: center; }
+        .folder-item:hover, .file-item:hover { background: #fff0f7; border-color: #ff66b3; box-shadow: 0 4px 12px rgba(255, 102, 179, 0.15); }
+        .folder-icon, .file-icon { width: 70px; height: 70px; object-fit: contain; margin-bottom: 0.8rem; border-radius: 8px; }
+        .folder-name, .file-name { width: 100%; text-align: center; padding: 4px 8px; border-radius: 8px; font-size: 14px; color: #5a2e48; word-break: break-word; max-height: 40px; overflow: hidden; }
+        .file-name { font-size: 13px; }
+        
+        /* 删除按钮 */
+        .delete-folder, .delete-file { position: absolute; top: 8px; right: 8px; background: #ff6666; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 12px; opacity: 0.8; }
+        .delete-folder:hover, .delete-file:hover { background: #ff3333; transform: scale(1.1); opacity: 1; }
+        
+        /* 目标样式 */
+        .year-target-container { margin: 15px 0; padding: 15px; background: #fff8fc; border-radius: 15px; border: 1px solid #ffd6e8; }
+        .year-header { display: flex; align-items: center; margin-bottom: 10px; font-size: 18px; color: #ff66b3; }
+        .year-checkbox { margin-right: 10px; width: 20px; height: 20px; accent-color: #ff66b3; cursor: pointer; }
+        .year-label { font-weight: bold; }
+        .goals-list { margin-left: 30px; }
+        .goal-item { display: flex; align-items: flex-start; margin: 8px 0; padding: 8px; border-radius: 8px; background: #fff; border: 1px solid #ffe6f2; }
+        .goal-checkbox { margin-right: 10px; margin-top: 3px; width: 16px; height: 16px; accent-color: #ff66b3; cursor: pointer; }
+        .goal-content { flex: 1; word-break: break-word; }
+        .target-actions { margin-top: 10px; display: flex; gap: 10px; margin-left: 30px; }
+        .target-edit-btn, .target-delete-btn { padding: 5px 10px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; font-size: 12px; display: none; }
+        .target-edit-btn { background: #ffb3d9; color: white; }
+        .target-edit-btn:hover { background: #ff99cc; }
+        .target-delete-btn { background: #ff6666; color: white; }
+        .target-delete-btn:hover { background: #ff3333; }
+        
+        /* 弹窗样式 */
+        .login-modal, .create-folder-modal, .exit-edit-modal, .target-modal, .folder-page-modal, .sticker-confirm-modal, .achievement-image-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 0 20px rgba(255, 102, 179, 0.3); z-index: 1000; width: 90%; max-width: 500px; }
+        .achievement-image-modal { max-width: 700px; text-align: center; }
+        .sticker-confirm-modal { max-width: 400px; }
+        .folder-page-modal { max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 153, 204, 0.5); z-index: 999; }
+        .achievement-image { max-width: 100%; max-height: 70vh; border-radius: 15px; margin: 15px 0; }
+        
+        /* 弹窗控件 */
+        .login-modal input, .create-folder-modal input, .target-modal input, .target-modal textarea { margin: 0.5rem 0; padding: 10px 15px; width: 100%; border: 2px solid #ffb3d9; border-radius: 15px; outline: none; color: #5a2e48; }
+        .target-modal textarea { min-height: 150px; resize: vertical; font-family: inherit; }
+        .confirmBtn, .saveTargetBtn, .confirmCreateFolderBtn, .upload-media-btn, .confirmStickerBtn, .confirmAchievementBtn { background: #ff66b3; color: white; border: none; border-radius: 15px; padding: 10px 20px; cursor: pointer; margin-right: 10px; transition: all 0.3s ease; }
+        .cancelBtn, .cancelTargetBtn, .cancelCreateFolderBtn, .close-folder-page, .cancelStickerBtn, .cancelAchievementBtn { background: #ffb3d9; color: white; border: none; border-radius: 15px; padding: 10px 20px; cursor: pointer; transition: all 0.3s ease; }
+        .confirmBtn:hover, .saveTargetBtn:hover, .confirmCreateFolderBtn:hover, .upload-media-btn:hover, .confirmStickerBtn:hover, .confirmAchievementBtn:hover { background: #ff3399; transform: scale(1.05); }
+        .cancelBtn:hover, .cancelTargetBtn:hover, .cancelCreateFolderBtn:hover, .close-folder-page:hover, .cancelStickerBtn:hover, .cancelAchievementBtn:hover { background: #ff99cc; transform: scale(1.05); }
+        
+        /* 文件夹图标上传 */
+        .folder-icon-upload { margin: 1rem 0; padding: 1rem; border: 2px dashed #ffb3d9; border-radius: 15px; text-align: center; cursor: pointer; }
+        .folder-icon-upload:hover { border-color: #ff66b3; background: #fff0f7; }
+        .icon-preview { width: 80px; height: 80px; margin: 1rem auto; border-radius: 10px; object-fit: contain; background: #fff8fc; display: flex; align-items: center; justify-content: center; color: #ff66b3; font-size: 30px; }
+        
         /* 首页样式 */
-        .home-page {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            gap: 50px;
-            padding: 20px;
-        }
-
-        .profile-card {
-            background-color: white;
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 5px 15px rgba(255, 102, 179, 0.2);
-            max-width: 400px;
-        }
-
-        .profile-card h1 {
-            color: #ff66b3;
-            font-size: 28px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .profile-info {
-            margin: 15px 0;
-            line-height: 1.8;
-        }
-
-        .profile-info span {
-            font-weight: bold;
-            color: #ff66b3;
-        }
-
-        .cartoon-img {
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid #ff99cc;
-            box-shadow: 0 5px 15px rgba(255, 102, 179, 0.3);
+        .home-page { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 50px; padding: 20px; }
+        .profile-card { background: white; border-radius: 30px; padding: 30px; box-shadow: 0 5px 15px rgba(255, 102, 179, 0.2); max-width: 400px; }
+        .profile-card h1 { color: #ff66b3; font-size: 28px; margin-bottom: 20px; text-align: center; }
+        .profile-info { margin: 15px 0; line-height: 1.8; }
+        .profile-info span { font-weight: bold; color: #ff66b3; }
+        .cartoon-img { width: 300px; height: 300px; border-radius: 50%; object-fit: cover; border: 5px solid #ff99cc; box-shadow: 0 5px 15px rgba(255, 102, 179, 0.3); cursor: pointer; transition: all 0.2s ease; }
+        .cartoon-img:hover { transform: scale(1.02); box-shadow: 0 8px 20px rgba(255, 102, 179, 0.4); }
+        
+        /* 首页编辑 */
+        .profile-edit-tools { display: none; margin-top: 15px; padding: 10px; background: #fff8fc; border-radius: 10px; border: 1px solid #ffd6e8; }
+        .edit-tool-group { margin: 8px 0; display: flex; align-items: center; gap: 10px; }
+        .edit-tool-label { font-size: 14px; color: #5a2e48; min-width: 80px; }
+        .color-picker, .font-select { padding: 5px; border: 1px solid #ffb3d9; border-radius: 8px; background: white; color: #5a2e48; }
+        
+        /* 贴纸样式 */
+        .sticker-button { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #ff66b3; color: white; display: none; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 102, 179, 0.3); z-index: 900; transition: all 0.3s ease; }
+        .sticker-button:hover { background: #ff3399; transform: scale(1.1); }
+        .sticker-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 800; }
+        .sticker-item { position: absolute; cursor: move; pointer-events: all; transform-origin: center center; transition: all 0.1s ease; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .sticker-handle { position: absolute; bottom: 5px; right: 5px; width: 20px; height: 20px; background: #ff66b3; border-radius: 50%; cursor: nwse-resize; display: none; }
+        .sticker-rotate-handle { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; background: #ff99cc; border-radius: 50%; cursor: rotate; display: none; }
+        .sticker-item.editable .sticker-handle, .sticker-item.editable .sticker-rotate-handle { display: block; }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .sidebar { width: 180px; }
+            .main-content { margin-left: 180px; padding: 20px; }
+            .media-section { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+            .home-page { flex-direction: column; text-align: center; }
+            .cartoon-img { margin: 0 auto 2rem; }
         }
     </style>
 </head>
 <body>
-    <!-- 侧边导航栏 -->
+    <!-- 侧边栏 -->
     <div class="sidebar">
         <h2>Yomi's World</h2>
-        
-        <!-- 登录按钮区域 - 移到侧边栏 -->
         <div class="login-section">
             <button class="login-btn" id="loginBtn">Management Login</button>
         </div>
-
-        <!-- 导航按钮 - 新增首页按钮 -->
         <button class="sidebar-btn" onclick="navigateTo('home')">🏠 Home</button>
         <button class="sidebar-btn" onclick="navigateTo('study')">📚 Study Diary</button>
         <button class="sidebar-btn" onclick="navigateTo('vlog')">🎥 Daily Vlog</button>
@@ -485,7 +129,7 @@
         <button class="sidebar-btn" onclick="navigateTo('target')">🎯 Personal Target</button>
     </div>
 
-    <!-- 登录弹窗 -->
+    <!-- 弹窗区域 -->
     <div class="overlay" id="loginOverlay"></div>
     <div class="login-modal" id="loginModal">
         <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Management Login</h3>
@@ -494,7 +138,6 @@
         <p id="loginError" style="color: #ff6666; margin-top: 0.5rem; display: none; text-align: center;">Wrong password!</p>
     </div>
 
-    <!-- 退出编辑模式弹窗 -->
     <div class="overlay" id="exitEditOverlay"></div>
     <div class="exit-edit-modal" id="exitEditModal">
         <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Exit Edit Mode?</h3>
@@ -505,30 +148,64 @@
         </div>
     </div>
 
-    <!-- 主内容区域 -->
+    <div class="overlay" id="stickerConfirmOverlay"></div>
+    <div class="sticker-confirm-modal" id="stickerConfirmModal">
+        <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Finish Sticker Editing?</h3>
+        <p style="text-align: center; margin-bottom: 1rem; color: #5a2e48;">Are you sure you want to save the sticker changes?</p>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <button id="confirmStickerBtn" class="confirmStickerBtn">Yes</button>
+            <button id="cancelStickerBtn" class="cancelStickerBtn">No</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="achievementImageOverlay"></div>
+    <div class="achievement-image-modal" id="achievementImageModal">
+        <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">🎉 Congratulations! 🎉</h3>
+        <p style="text-align: center; margin-bottom: 1rem; color: #5a2e48;">You've completed all your goals for this year!</p>
+        <img id="achievementImage" class="achievement-image" src="" alt="Achievement">
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 1rem;">
+            <button id="confirmAchievementBtn" class="confirmAchievementBtn">OK</button>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
     <div class="main-content" id="main-content">
+        <div class="sticker-container" id="stickerContainer"></div>
+        
         <!-- 首页 -->
         <div id="home" class="page-content">
             <div class="home-page">
-                <!-- 关键修改处：替换src为你提供的图片链接 -->
-                <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/eff44eee1e6e4f2792c1775615dc2c74.JPG~tplv-a9rns2rl98-24:720:720.image?lk3s=8e244e95&rcl=202602080916150F3B363E9BA71B184F7A&rrcfp=8a172a1a&x-expires=1771118176&x-signature=rbjW80X3iJyV3cv9f5kR3omsSlc%3D" alt="Yomi's Profile" class="cartoon-img">
+                <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/eff44eee1e6e4f2792c1775615dc2c74.JPG~tplv-a9rns2rl98-24:720:720.image?lk3s=8e244e95&rcl=202602080916150F3B363E9BA71B184F7A&rrcfp=8a172a1a&x-expires=1771118176&x-signature=rbjW80X3iJyV3cv9f5kR3omsSlc%3D" alt="Yomi's Profile" class="cartoon-img" id="profileImage">
                 <div class="profile-card">
                     <h1>About Me 💖</h1>
-                    <div class="profile-info">
+                    <div class="profile-edit-tools" id="profileEditTools">
+                        <div class="edit-tool-group">
+                            <span class="edit-tool-label">Text Color:</span>
+                            <input type="color" class="color-picker" id="profileTextColor" value="#5a2e48">
+                        </div>
+                        <div class="edit-tool-group">
+                            <span class="edit-tool-label">Font:</span>
+                            <select class="font-select" id="profileFont">
+                                <option value="Comic Sans MS, Arial Rounded MT Bold, sans-serif">Cute Font</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="Times New Roman, serif">Times New Roman</option>
+                                <option value="Courier New, monospace">Courier</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="profile-info" id="profileInfo" contenteditable="false">
                         <p><span>Name:</span> Yomi Qiu</p>
                         <p><span>Birthday:</span> 2010.03.25</p>
                         <p><span>MBTI:</span> INTJ</p>
                         <p><span>Hobbies:</span> Playing Tennis, Finding Dilicious Food, Mediating</p>
-                        <p><span>Self-introduction:</span> Hello! I'm Yomi, born on March 25, 2010. As an INTJ, I'm a thoughtful and independent person who loves to explore the world around me. 
-                                I enjoy reading, creating art, and documenting my daily life through diaries and vlogs. 
-                                This little corner of the internet is where I share my study journey, daily life, and personal goals. 
-                                Welcome to my world!</p>
+                        <p><span>Self-introduction:</span> Hello! I'm Yomi, born on March 25, 2010. As an INTJ, I'm a thoughtful and independent person who loves to explore the world around me. I enjoy reading, creating art, and documenting my daily life through diaries and vlogs. This little corner of the internet is where I share my study journey, daily life, and personal goals. Welcome to my world!</p>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Study Diary 区域 - 单个加号按钮 -->
+        <!-- 各个功能页面 -->
         <div id="study" class="page-content" style="display: none;">
             <h2 class="page-title">📚 Study Diary</h2>
             <section class="content-section">
@@ -538,7 +215,6 @@
             </section>
         </div>
 
-        <!-- Daily Vlog 区域 - 单个加号按钮 -->
         <div id="vlog" class="page-content" style="display: none;">
             <h2 class="page-title">🎥 Daily Vlog</h2>
             <section class="content-section">
@@ -548,7 +224,6 @@
             </section>
         </div>
 
-        <!-- Week Diary 区域 - 单个加号按钮 -->
         <div id="week" class="page-content" style="display: none;">
             <h2 class="page-title">📖 Week Diary</h2>
             <section class="content-section">
@@ -558,7 +233,6 @@
             </section>
         </div>
 
-        <!-- Achievements Showcase 区域 - 单个加号按钮 -->
         <div id="achieve" class="page-content" style="display: none;">
             <h2 class="page-title">🏆 Achievements Showcase</h2>
             <section class="content-section">
@@ -568,7 +242,6 @@
             </section>
         </div>
 
-        <!-- Personal Target 区域 -->
         <div id="target" class="page-content" style="display: none;">
             <h2 class="page-title">🎯 Personal Target</h2>
             <section class="content-section personal-target">
@@ -579,26 +252,22 @@
         </div>
     </div>
 
-    <!-- 创建文件夹弹窗 - 支持上传自定义icon -->
+    <!-- 功能弹窗 -->
     <div class="overlay" id="createFolderOverlay"></div>
     <div class="create-folder-modal" id="createFolderModal">
         <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Create New Folder</h3>
         <input type="text" id="newFolderNameInput" placeholder="Enter folder name (e.g. Math Homework)">
-        
-        <!-- 文件夹图标上传区域 -->
         <div class="folder-icon-upload" id="folderIconUpload">
             <p style="color: #ff66b3;">📁 Click to upload folder icon</p>
             <div class="icon-preview" id="folderIconPreview">📁</div>
             <input type="file" id="folderIconFileInput" accept="image/*" style="display: none;">
         </div>
-        
         <div style="display: flex; justify-content: center; gap: 10px; margin-top: 1rem;">
             <button id="confirmCreateFolderBtn" class="confirmCreateFolderBtn">Create</button>
             <button id="cancelCreateFolderBtn" class="cancelCreateFolderBtn">Cancel</button>
         </div>
     </div>
 
-    <!-- 文件夹详情页面弹窗（新网页） -->
     <div class="overlay" id="folderPageOverlay"></div>
     <div class="folder-page-modal" id="folderPageModal">
         <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;" id="folderPageTitle">Folder Content</h3>
@@ -609,13 +278,12 @@
         </div>
     </div>
 
-    <!-- 个人目标弹窗 -->
     <div class="overlay" id="targetOverlay"></div>
     <div class="target-modal" id="targetModal">
         <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Add/Edit Target</h3>
         <div class="target-form">
             <input type="text" id="targetYear" placeholder="Enter year (e.g. 2024)">
-            <input type="text" id="targetContent" placeholder="Enter target (e.g. Learn JavaScript)">
+            <textarea id="targetContent" placeholder="Enter targets (one per line)&#10;e.g.&#10;Learn JavaScript&#10;Read 10 books&#10;Exercise 3 times a week"></textarea>
             <input type="hidden" id="targetId">
             <div style="display: flex; justify-content: center; gap: 10px; margin-top: 1rem;">
                 <button id="saveTargetBtn" class="saveTargetBtn">Save</button>
@@ -624,388 +292,276 @@
         </div>
     </div>
 
+    <!-- 贴纸按钮 -->
+    <div class="sticker-button" id="stickerButton">🍪</div>
+
     <script>
         // 核心变量
-        const ADMIN_PASSWORD = "Shining0325";
-        let isAdmin = false;
-        let currentMediaSection = "";
-        let currentFolderId = ""; // 当前打开的文件夹ID
-        let folderIcons = {}; // 存储文件夹图标
-        let folderNames = {}; // 存储文件夹名称
-        let folderContents = {}; // 存储文件夹内的媒体文件
-        let targets = [];
-        let targetIdCounter = 1;
+        const PWD = "Shining0325";
+        let isAdmin = false, currMedia = "", currFolder = "", editTargetId = null, stickerEdit = false;
+        let folderIcons = {}, folderNames = {}, folderContents = {}, targets = [];
+        let idCounter = 1;
 
-        // 页面导航功能
+        // 激励语
+        const quotes = [
+            "Believe in yourself, you did it! ✨", "Hard work pays off, congratulations! 🎉",
+            "You're amazing, keep going! 💪", "Dream big, achieve bigger! 🌟",
+            "Success is the sum of small efforts! 📚", "You've crushed your goals, proud of you! 🥳",
+            "Every small step leads to big achievements! 🚀", "Consistency is key, and you nailed it! 🗝️"
+        ];
+
+        // 页面导航
         function navigateTo(pageId) {
-            // 隐藏所有页面
-            const allPages = document.querySelectorAll('.page-content');
-            allPages.forEach(page => {
-                page.style.display = 'none';
-            });
-            // 显示目标页面
+            document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
             document.getElementById(pageId).style.display = 'block';
         }
 
-        // DOM 元素
-        const loginBtn = document.getElementById("loginBtn");
-        const loginModal = document.getElementById("loginModal");
-        const loginOverlay = document.getElementById("loginOverlay");
-        const passwordInput = document.getElementById("passwordInput");
-        const submitLogin = document.getElementById("submitLogin");
-        const loginError = document.getElementById("loginError");
+        // DOM元素获取
+        const el = (id) => document.getElementById(id);
+        const els = (cls) => document.querySelectorAll(cls);
         
-        // 退出编辑模式相关
-        const exitEditModal = document.getElementById("exitEditModal");
-        const exitEditOverlay = document.getElementById("exitEditOverlay");
-        const confirmExitEdit = document.getElementById("confirmExitEdit");
-        const cancelExitEdit = document.getElementById("cancelExitEdit");
-
-        // 管理员按钮（单个加号按钮）
-        const addFolderBtns = document.querySelectorAll(".add-folder-btn");
-        const addTargetBtn = document.getElementById("addTargetBtn");
-
-        // 创建文件夹相关
-        const createFolderModal = document.getElementById("createFolderModal");
-        const createFolderOverlay = document.getElementById("createFolderOverlay");
-        const newFolderNameInput = document.getElementById("newFolderNameInput");
-        const folderIconUpload = document.getElementById("folderIconUpload");
-        const folderIconFileInput = document.getElementById("folderIconFileInput");
-        const folderIconPreview = document.getElementById("folderIconPreview");
-        const confirmCreateFolderBtn = document.getElementById("confirmCreateFolderBtn");
-        const cancelCreateFolderBtn = document.getElementById("cancelCreateFolderBtn");
-
-        // 文件夹详情页面相关
-        const folderPageModal = document.getElementById("folderPageModal");
-        const folderPageOverlay = document.getElementById("folderPageOverlay");
-        const folderPageTitle = document.getElementById("folderPageTitle");
-        const folderMediaContent = document.getElementById("folderMediaContent");
-        const uploadMediaBtn = document.getElementById("uploadMediaBtn");
-        const closeFolderPageBtn = document.getElementById("closeFolderPageBtn");
-
-        // 目标相关
-        const targetModal = document.getElementById("targetModal");
-        const targetOverlay = document.getElementById("targetOverlay");
-        const targetYear = document.getElementById("targetYear");
-        const targetContent = document.getElementById("targetContent");
-        const targetId = document.getElementById("targetId");
-        const saveTargetBtn = document.getElementById("saveTargetBtn");
-        const cancelTargetBtn = document.getElementById("cancelTargetBtn");
-        const targetList = document.getElementById("targetList");
-
-        // 登录/退出编辑功能
-        loginBtn.addEventListener("click", () => {
+        // 登录/退出逻辑
+        el("loginBtn").addEventListener("click", () => {
             if (!isAdmin) {
-                // 未登录 - 显示登录弹窗
-                loginModal.style.display = "block";
-                loginOverlay.style.display = "block";
-                passwordInput.focus();
+                el("loginModal").style.display = "block";
+                el("loginOverlay").style.display = "block";
+                el("passwordInput").focus();
             } else {
-                // 已登录 - 显示退出编辑确认弹窗
-                exitEditModal.style.display = "block";
-                exitEditOverlay.style.display = "block";
+                el("exitEditModal").style.display = "block";
+                el("exitEditOverlay").style.display = "block";
             }
         });
 
-        // 确认退出编辑模式
-        confirmExitEdit.addEventListener("click", () => {
+        // 确认退出编辑
+        el("confirmExitEdit").addEventListener("click", () => {
             isAdmin = false;
-            exitEditModal.style.display = "none";
-            exitEditOverlay.style.display = "none";
-            
-            // 隐藏所有管理员按钮
-            addFolderBtns.forEach(btn => btn.style.display = "none");
-            addTargetBtn.style.display = "none";
-            
-            // 隐藏所有删除按钮
-            document.querySelectorAll('.delete-folder, .delete-file, .target-edit').forEach(el => {
-                el.style.display = 'none';
-            });
-            
-            // 禁用所有编辑功能
-            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
-                el.contentEditable = false;
-            });
-            
+            el("exitEditModal").style.display = el("exitEditOverlay").style.display = "none";
+            els(".add-folder-btn, .add-target-btn, .sticker-button, .profile-edit-tools").forEach(e => e.style.display = "none");
+            els(".delete-folder, .delete-file, .target-edit-btn, .target-delete-btn").forEach(e => e.style.display = "none");
+            el("profileInfo").contentEditable = false;
+            el("profileInfo").style.cursor = "default";
+            if (stickerEdit) finishSticker(true);
             alert("✨ Edit mode ended! You can no longer modify content.");
         });
 
-        // 取消退出编辑模式
-        cancelExitEdit.addEventListener("click", () => {
-            exitEditModal.style.display = "none";
-            exitEditOverlay.style.display = "none";
+        // 取消退出
+        el("cancelExitEdit").addEventListener("click", () => {
+            el("exitEditModal").style.display = el("exitEditOverlay").style.display = "none";
         });
 
-        exitEditOverlay.addEventListener("click", () => {
-            exitEditModal.style.display = "none";
-            exitEditOverlay.style.display = "none";
-        });
-
-        loginOverlay.addEventListener("click", () => {
-            loginModal.style.display = "none";
-            loginOverlay.style.display = "none";
-            loginError.style.display = "none";
-        });
-
-        submitLogin.addEventListener("click", () => {
-            if (passwordInput.value === ADMIN_PASSWORD) {
+        // 登录验证
+        el("submitLogin").addEventListener("click", () => {
+            if (el("passwordInput").value === PWD) {
                 isAdmin = true;
-                loginModal.style.display = "none";
-                loginOverlay.style.display = "none";
-                // 显示所有管理员按钮
-                addFolderBtns.forEach(btn => btn.style.display = "inline-block");
-                addTargetBtn.style.display = "inline-block";
-                // 显示所有已存在的删除按钮
-                document.querySelectorAll('.delete-folder, .delete-file, .target-edit').forEach(el => {
-                    el.style.display = el.classList.contains('delete-folder') || el.classList.contains('delete-file') ? 'flex' : 'inline';
-                });
-                // 启用编辑功能
-                document.querySelectorAll('[contenteditable="true"]').forEach(el => {
-                    el.contentEditable = true;
-                });
+                el("loginModal").style.display = el("loginOverlay").style.display = "none";
+                els(".add-folder-btn").forEach(e => e.style.display = "inline-block");
+                el("addTargetBtn").style.display = "inline-block";
+                el("stickerButton").style.display = "flex";
+                el("profileEditTools").style.display = "block";
+                el("profileInfo").contentEditable = true;
+                el("profileInfo").style.cursor = "text";
+                els(".delete-folder, .delete-file").forEach(e => e.style.display = "flex");
+                els(".target-edit-btn, .target-delete-btn").forEach(e => e.style.display = "inline-block");
                 alert("✨ Edit mode begin! You can now create folders and manage content.");
             } else {
-                loginError.style.display = "block";
-                passwordInput.value = "";
+                el("loginError").style.display = "block";
+                el("passwordInput").value = "";
             }
         });
 
-        // 文件夹图标上传
-        folderIconUpload.addEventListener("click", () => {
-            folderIconFileInput.click();
+        // 关闭弹窗通用方法
+        function closeModal(modalId, overlayId) {
+            el(modalId).style.display = el(overlayId).style.display = "none";
+        }
+
+        // 绑定弹窗关闭事件
+        el("loginOverlay").addEventListener("click", () => closeModal("loginModal", "loginOverlay"));
+        el("exitEditOverlay").addEventListener("click", () => closeModal("exitEditModal", "exitEditOverlay"));
+        el("cancelCreateFolderBtn").addEventListener("click", () => closeModal("createFolderModal", "createFolderOverlay"));
+        el("createFolderOverlay").addEventListener("click", () => closeModal("createFolderModal", "createFolderOverlay"));
+        el("closeFolderPageBtn").addEventListener("click", () => {
+            closeModal("folderPageModal", "folderPageOverlay");
+            currFolder = "";
+        });
+        el("folderPageOverlay").addEventListener("click", () => {
+            closeModal("folderPageModal", "folderPageOverlay");
+            currFolder = "";
+        });
+        el("cancelTargetBtn").addEventListener("click", () => {
+            closeModal("targetModal", "targetOverlay");
+            editTargetId = null;
+        });
+        el("targetOverlay").addEventListener("click", () => {
+            closeModal("targetModal", "targetOverlay");
+            editTargetId = null;
         });
 
-        folderIconFileInput.addEventListener("change", (e) => {
+        // 打开创建文件夹弹窗
+        function openCreateFolder(section) {
+            if (!isAdmin) return;
+            currMedia = section;
+            el("createFolderModal").style.display = "block";
+            el("createFolderOverlay").style.display = "block";
+            el("newFolderNameInput").value = "";
+            el("folderIconPreview").innerHTML = "📁";
+            el("folderIconFileInput").value = "";
+            setTimeout(() => el("newFolderNameInput").focus(), 100);
+        }
+
+        // 文件夹图标上传
+        el("folderIconUpload").addEventListener("click", () => el("folderIconFileInput").click());
+        el("folderIconFileInput").addEventListener("change", (e) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    folderIconPreview.innerHTML = `<img src="${event.target.result}" width="80" height="80" style="object-fit: contain; border-radius: 10px;">`;
+                reader.onload = (ev) => {
+                    el("folderIconPreview").innerHTML = `<img src="${ev.target.result}" width="80" height="80" style="object-fit: contain; border-radius: 10px;">`;
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // 打开创建文件夹弹窗
-        function openCreateFolderModal(section) {
-            if (!isAdmin) return;
-            
-            currentMediaSection = section;
-            createFolderModal.style.display = "block";
-            createFolderOverlay.style.display = "block";
-            newFolderNameInput.value = "";
-            folderIconPreview.innerHTML = "📁"; // 重置预览
-            folderIconFileInput.value = ""; // 重置文件输入
-            // 自动聚焦到输入框
-            setTimeout(() => {
-                newFolderNameInput.focus();
-            }, 100);
-        }
-
-        // 关闭创建文件夹弹窗
-        cancelCreateFolderBtn.addEventListener("click", () => {
-            createFolderModal.style.display = "none";
-            createFolderOverlay.style.display = "none";
-        });
-
-        createFolderOverlay.addEventListener("click", () => {
-            createFolderModal.style.display = "none";
-            createFolderOverlay.style.display = "none";
-        });
-
         // 创建文件夹
-        confirmCreateFolderBtn.addEventListener("click", () => {
-            const folderName = newFolderNameInput.value.trim();
-            if (!folderName) {
+        el("confirmCreateFolderBtn").addEventListener("click", () => {
+            const name = el("newFolderNameInput").value.trim();
+            if (!name) {
                 alert("Please enter a folder name!");
-                newFolderNameInput.focus();
+                el("newFolderNameInput").focus();
                 return;
             }
 
-            const mediaSection = document.getElementById(`${currentMediaSection}Media`);
             const folderId = `folder_${Date.now()}`;
+            folderNames[folderId] = name;
             
-            // 保存文件夹名称
-            folderNames[folderId] = folderName;
-            
-            // 保存文件夹图标
-            const iconPreviewContent = folderIconPreview.innerHTML;
-            if (iconPreviewContent.includes('img src=')) {
-                const imgSrc = iconPreviewContent.match(/src="(.*?)"/)[1];
-                folderIcons[folderId] = imgSrc;
-            } else {
-                // 默认图标
-                folderIcons[folderId] = "https://via.placeholder.com/70/ff66b3/ffffff?text=📁";
-            }
-            
-            // 初始化文件夹内容
+            const preview = el("folderIconPreview").innerHTML;
+            folderIcons[folderId] = preview.includes('img src=') ? preview.match(/src="(.*?)"/)[1] : "https://via.placeholder.com/70/ff66b3/ffffff?text=📁";
             folderContents[folderId] = [];
 
             // 创建文件夹元素
-            const folderItem = document.createElement("div");
-            folderItem.className = "folder-item";
-            folderItem.dataset.id = folderId;
-            
-            // 文件夹HTML结构
-            folderItem.innerHTML = `
+            const folder = document.createElement("div");
+            folder.className = "folder-item";
+            folder.dataset.id = folderId;
+            folder.innerHTML = `
                 <button class="delete-folder" style="display: ${isAdmin ? "flex" : "none"}">×</button>
-                <img src="${folderIcons[folderId]}" class="folder-icon" alt="${folderName}">
-                <div class="folder-name" contenteditable="${isAdmin}">${folderName}</div>
+                <img src="${folderIcons[folderId]}" class="folder-icon" alt="${name}">
+                <div class="folder-name" contenteditable="${isAdmin}">${name}</div>
             `;
 
-            // 文件夹名称编辑
-            const folderNameEl = folderItem.querySelector('.folder-name');
-            folderNameEl.addEventListener("keydown", (e) => {
+            // 名称编辑
+            const nameEl = folder.querySelector('.folder-name');
+            nameEl.addEventListener("keydown", (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    folderNameEl.blur(); // 失去焦点完成编辑
+                    nameEl.blur();
                 }
             });
 
-            folderNameEl.addEventListener("blur", () => {
-                const newName = folderNameEl.textContent.trim() || "New Folder";
-                folderNameEl.textContent = newName;
-                folderNames[folderId] = newName; // 更新名称
+            nameEl.addEventListener("blur", () => {
+                const newName = nameEl.textContent.trim() || "New Folder";
+                nameEl.textContent = newName;
+                folderNames[folderId] = newName;
             });
 
-            // 删除文件夹功能（删除键1）
-            const deleteBtn = folderItem.querySelector(".delete-folder");
-            deleteBtn.addEventListener("click", (e) => {
-                e.stopPropagation(); // 防止触发文件夹打开
-                if (confirm(`Are you sure to delete the folder "${folderNameEl.textContent}"?\nAll contents inside will also be deleted.`)) {
-                    // 清理文件URL
+            // 删除文件夹
+            folder.querySelector(".delete-folder").addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (confirm(`Are you sure to delete the folder "${nameEl.textContent}"?\nAll contents inside will also be deleted.`)) {
                     if (folderContents[folderId]) {
                         folderContents[folderId].forEach(file => {
-                            if (file.url && file.url.startsWith('blob:')) {
-                                URL.revokeObjectURL(file.url);
-                            }
+                            if (file.url && file.url.startsWith('blob:')) URL.revokeObjectURL(file.url);
                         });
                     }
-                    // 删除文件夹
-                    mediaSection.removeChild(folderItem);
+                    el(`${currMedia}Media`).removeChild(folder);
                     delete folderIcons[folderId];
                     delete folderNames[folderId];
                     delete folderContents[folderId];
                 }
             });
 
-            // 点击文件夹打开新网页（弹窗形式）
-            folderItem.addEventListener("click", (e) => {
-                // 忽略删除按钮和名称编辑区域的点击
-                if (e.target.classList.contains('delete-folder') || 
-                    e.target.classList.contains('folder-name')) {
-                    return;
-                }
-                
-                openFolderPage(folderId);
+            // 打开文件夹
+            folder.addEventListener("click", (e) => {
+                if (e.target.classList.contains('delete-folder') || e.target.classList.contains('folder-name')) return;
+                openFolder(folderId);
             });
 
-            // 添加到媒体区域
-            mediaSection.appendChild(folderItem);
+            // 添加到页面
+            el(`${currMedia}Media`).appendChild(folder);
             
-            // 创建后自动进入重命名模式
+            // 自动重命名
             setTimeout(() => {
-                folderNameEl.focus();
-                // 选中所有文本以便直接输入
+                nameEl.focus();
                 const range = document.createRange();
                 const sel = window.getSelection();
-                range.selectNodeContents(folderNameEl);
+                range.selectNodeContents(nameEl);
                 sel.removeAllRanges();
                 sel.addRange(range);
             }, 200);
 
-            // 关闭弹窗
-            createFolderModal.style.display = "none";
-            createFolderOverlay.style.display = "none";
+            closeModal("createFolderModal", "createFolderOverlay");
         });
 
-        // 打开文件夹详情页面（新网页）
-        function openFolderPage(folderId) {
-            currentFolderId = folderId;
-            folderPageTitle.textContent = folderNames[folderId] || "Folder Content";
-            folderPageModal.style.display = "block";
-            folderPageOverlay.style.display = "block";
-            
-            // 渲染文件夹内的媒体文件
+        // 打开文件夹详情
+        function openFolder(folderId) {
+            currFolder = folderId;
+            el("folderPageTitle").textContent = folderNames[folderId] || "Folder Content";
+            el("folderPageModal").style.display = "block";
+            el("folderPageOverlay").style.display = "block";
             renderFolderMedia(folderId);
         }
 
-        // 关闭文件夹详情页面
-        closeFolderPageBtn.addEventListener("click", () => {
-            folderPageModal.style.display = "none";
-            folderPageOverlay.style.display = "none";
-            currentFolderId = "";
-        });
-
-        folderPageOverlay.addEventListener("click", () => {
-            folderPageModal.style.display = "none";
-            folderPageOverlay.style.display = "none";
-            currentFolderId = "";
-        });
-
-        // 渲染文件夹内的媒体文件
+        // 渲染文件夹内容
         function renderFolderMedia(folderId) {
-            folderMediaContent.innerHTML = "";
-            
+            el("folderMediaContent").innerHTML = "";
             if (!folderContents[folderId]) return;
             
-            folderContents[folderId].forEach((file, index) => {
-                const fileItem = document.createElement("div");
-                fileItem.className = "file-item";
-                fileItem.dataset.index = index;
+            folderContents[folderId].forEach((file, idx) => {
+                const fileEl = document.createElement("div");
+                fileEl.className = "file-item";
+                fileEl.dataset.index = idx;
                 
-                // 创建文件预览
-                let filePreview = "";
+                let preview = "";
                 if (file.type.startsWith("image/")) {
-                    filePreview = `<img src="${file.url}" class="file-icon" alt="${file.name}">`;
+                    preview = `<img src="${file.url}" class="file-icon" alt="${file.name}">`;
                 } else if (file.type.startsWith("video/")) {
-                    filePreview = `<video src="${file.url}" class="file-icon" controls muted playsinline></video>`;
+                    preview = `<video src="${file.url}" class="file-icon" controls muted playsinline></video>`;
                 } else {
-                    filePreview = `<div class="file-icon" style="background: #ffd6e8; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ff66b3;">📄</div>`;
+                    preview = `<div class="file-icon" style="background: #ffd6e8; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ff66b3;">📄</div>`;
                 }
 
-                // 文件HTML结构
-                fileItem.innerHTML = `
+                fileEl.innerHTML = `
                     <button class="delete-file" style="display: ${isAdmin ? "flex" : "none"}">×</button>
-                    ${filePreview}
+                    ${preview}
                     <div class="file-name" contenteditable="${isAdmin}">${file.name}</div>
                 `;
 
-                // 文件名称编辑
-                const fileNameEl = fileItem.querySelector('.file-name');
+                // 文件名编辑
+                const fileNameEl = fileEl.querySelector('.file-name');
                 fileNameEl.addEventListener("keydown", (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        fileNameEl.blur(); // 失去焦点完成编辑
+                        fileNameEl.blur();
                     }
                 });
 
                 fileNameEl.addEventListener("blur", () => {
                     const newName = fileNameEl.textContent.trim() || file.originalName;
                     fileNameEl.textContent = newName;
-                    // 更新文件名
-                    folderContents[folderId][index].name = newName;
+                    folderContents[folderId][idx].name = newName;
                 });
 
-                // 文件删除功能（删除键1）
-                const deleteFileBtn = fileItem.querySelector(".delete-file");
-                deleteFileBtn.addEventListener("click", (e) => {
+                // 删除文件
+                fileEl.querySelector(".delete-file").addEventListener("click", (e) => {
                     e.stopPropagation();
                     if (confirm(`Are you sure to delete "${fileNameEl.textContent}"?`)) {
-                        // 释放文件URL
-                        if (file.url && file.url.startsWith('blob:')) {
-                            URL.revokeObjectURL(file.url);
-                        }
-                        // 删除文件
-                        folderContents[folderId].splice(index, 1);
-                        renderFolderMedia(folderId); // 重新渲染
+                        if (file.url && file.url.startsWith('blob:')) URL.revokeObjectURL(file.url);
+                        folderContents[folderId].splice(idx, 1);
+                        renderFolderMedia(folderId);
                     }
                 });
 
-                // 添加到文件夹内容区域
-                folderMediaContent.appendChild(fileItem);
+                el("folderMediaContent").appendChild(fileEl);
                 
-                // 自动进入重命名模式（仅新上传的文件）
+                // 新文件自动重命名
                 if (file.isNew) {
                     setTimeout(() => {
                         fileNameEl.focus();
@@ -1014,179 +570,512 @@
                         range.selectNodeContents(fileNameEl);
                         sel.removeAllRanges();
                         sel.addRange(range);
-                        file.isNew = false; // 重置标记
+                        file.isNew = false;
                     }, 200);
                 }
             });
         }
 
-        // 文件夹内上传媒体文件
-        uploadMediaBtn.addEventListener("click", () => {
+        // 上传媒体文件
+        el("uploadMediaBtn").addEventListener("click", () => {
             if (!isAdmin) return;
             
-            const fileInput = document.createElement("input");
-            fileInput.type = "file";
-            fileInput.accept = "image/*,video/*";
-            fileInput.multiple = true;
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*,video/*";
+            input.multiple = true;
+            input.click();
 
-            fileInput.click();
-
-            fileInput.addEventListener("change", (e) => {
+            input.addEventListener("change", (e) => {
                 const files = e.target.files;
-                if (!files.length || !currentFolderId) return;
+                if (!files.length || !currFolder) return;
 
-                // 初始化文件夹内容数组
-                if (!folderContents[currentFolderId]) {
-                    folderContents[currentFolderId] = [];
-                }
+                if (!folderContents[currFolder]) folderContents[currFolder] = [];
 
-                // 批量上传文件
                 for (let file of files) {
-                    const fileUrl = URL.createObjectURL(file);
-                    
-                    // 添加文件到文件夹
-                    folderContents[currentFolderId].push({
+                    const url = URL.createObjectURL(file);
+                    folderContents[currFolder].push({
                         name: file.name,
                         originalName: file.name,
                         type: file.type,
-                        url: fileUrl,
-                        isNew: true // 标记为新文件，用于自动重命名
+                        url: url,
+                        isNew: true
                     });
                 }
 
-                // 重新渲染文件夹内容
-                renderFolderMedia(currentFolderId);
+                renderFolderMedia(currFolder);
             });
         });
 
-        // 绑定创建文件夹按钮（每个section一个加号按钮）
-        document.getElementById("studyAddFolderBtn").addEventListener("click", () => openCreateFolderModal("study"));
-        document.getElementById("vlogAddFolderBtn").addEventListener("click", () => openCreateFolderModal("vlog"));
-        document.getElementById("weekAddFolderBtn").addEventListener("click", () => openCreateFolderModal("week"));
-        document.getElementById("achieveAddFolderBtn").addEventListener("click", () => openCreateFolderModal("achieve"));
+        // 绑定创建文件夹按钮
+        el("studyAddFolderBtn").addEventListener("click", () => openCreateFolder("study"));
+        el("vlogAddFolderBtn").addEventListener("click", () => openCreateFolder("vlog"));
+        el("weekAddFolderBtn").addEventListener("click", () => openCreateFolder("week"));
+        el("achieveAddFolderBtn").addEventListener("click", () => openCreateFolder("achieve"));
 
-        // 个人目标功能
+        // 目标管理
         function renderTargets() {
-            targetList.innerHTML = "";
-            targets.forEach(target => {
-                const targetItem = document.createElement("div");
-                targetItem.className = `target-item ${target.completed ? "completed" : ""}`;
-                targetItem.innerHTML = `
-                    <input type="checkbox" class="target-checkbox" ${target.completed ? "checked" : ""} data-id="${target.id}">
-                    <div class="target-content">
-                        <strong>${target.year}</strong>: ${target.content}
-                    </div>
-                    <span class="target-edit" data-id="${target.id}" style="${isAdmin ? "display: inline" : "none"}">✏️ Edit</span>
+            el("targetList").innerHTML = "";
+            const yearGroups = {};
+            
+            targets.forEach(t => {
+                if (!yearGroups[t.year]) yearGroups[t.year] = [];
+                yearGroups[t.year].push(t);
+            });
+
+            Object.keys(yearGroups).sort().forEach(year => {
+                const yearTargets = yearGroups[year];
+                const allDone = yearTargets.every(t => t.completed);
+                
+                const yearContainer = document.createElement("div");
+                yearContainer.className = "year-target-container";
+                yearContainer.dataset.year = year;
+
+                // 年份头部
+                const yearHeader = document.createElement("div");
+                yearHeader.className = "year-header";
+                yearHeader.innerHTML = `
+                    <input type="checkbox" class="year-checkbox" ${allDone ? "checked" : ""} data-year="${year}">
+                    <span class="year-label">${year} Goals</span>
                 `;
 
-                // 勾选/取消勾选
-                targetItem.querySelector(".target-checkbox").addEventListener("change", (e) => {
-                    const id = parseInt(e.target.dataset.id);
-                    const target = targets.find(t => t.id === id);
-                    if (target) {
-                        target.completed = e.target.checked;
+                // 目标列表
+                const goalsList = document.createElement("div");
+                goalsList.className = "goals-list";
+
+                yearTargets.forEach(target => {
+                    const goal = document.createElement("div");
+                    goal.className = "goal-item";
+                    goal.dataset.id = target.id;
+                    goal.innerHTML = `
+                        <input type="checkbox" class="goal-checkbox" ${target.completed ? "checked" : ""} data-id="${target.id}">
+                        <div class="goal-content">${target.content}</div>
+                    `;
+                    goalsList.appendChild(goal);
+
+                    // 目标复选框
+                    goal.querySelector(".goal-checkbox").addEventListener("change", (e) => {
+                        const tid = parseInt(e.target.dataset.id);
+                        const t = targets.find(t => t.id === tid);
+                        if (t) {
+                            t.completed = e.target.checked;
+                            renderTargets();
+                            checkYearDone(year);
+                        }
+                    });
+                });
+
+                // 年份复选框
+                yearHeader.querySelector(".year-checkbox").addEventListener("change", (e) => {
+                    const y = e.target.dataset.year;
+                    const checked = e.target.checked;
+                    yearTargets.forEach(t => t.completed = checked);
+                    renderTargets();
+                    if (checked) generateAchievement(y);
+                });
+
+                // 操作按钮
+                const actions = document.createElement("div");
+                actions.className = "target-actions";
+                actions.innerHTML = `
+                    <button class="target-edit-btn" data-year="${year}" style="${isAdmin ? "inline-block" : "none"}">✏️ Edit</button>
+                    <button class="target-delete-btn" data-year="${year}" style="${isAdmin ? "inline-block" : "none"}">🗑️ Delete</button>
+                `;
+
+                // 编辑按钮
+                actions.querySelector(".target-edit-btn").addEventListener("click", () => openEditTarget(year));
+                
+                // 删除按钮
+                actions.querySelector(".target-delete-btn").addEventListener("click", () => {
+                    if (confirm(`Are you sure to delete all goals for ${year}?`)) {
+                        targets = targets.filter(t => t.year !== year);
                         renderTargets();
                     }
                 });
 
-                // 编辑目标
-                targetItem.querySelector(".target-edit").addEventListener("click", (e) => {
-                    const id = parseInt(e.target.dataset.id);
-                    const target = targets.find(t => t.id === id);
-                    if (target) {
-                        targetId.value = target.id;
-                        targetYear.value = target.year;
-                        targetContent.value = target.content;
-                        targetModal.style.display = "block";
-                        targetOverlay.style.display = "block";
-                    }
-                });
-
-                targetList.appendChild(targetItem);
+                // 组装
+                yearContainer.appendChild(yearHeader);
+                yearContainer.appendChild(goalsList);
+                yearContainer.appendChild(actions);
+                el("targetList").appendChild(yearContainer);
             });
         }
 
-        // 打开添加目标弹窗
-        addTargetBtn.addEventListener("click", () => {
-            targetId.value = "";
-            targetYear.value = "";
-            targetContent.value = "";
-            targetModal.style.display = "block";
-            targetOverlay.style.display = "block";
-            targetYear.focus();
-        });
+        // 检查年份目标完成
+        function checkYearDone(year) {
+            const yearTargets = targets.filter(t => t.year === year);
+            if (yearTargets.every(t => t.completed)) generateAchievement(year);
+        }
 
-        // 关闭目标弹窗
-        cancelTargetBtn.addEventListener("click", () => {
-            targetModal.style.display = "none";
-            targetOverlay.style.display = "none";
-        });
+        // 生成成就图片
+        function generateAchievement(year) {
+            const quote = quotes[Math.floor(Math.random() * quotes.length)];
+            
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+                    <rect width="600" height="400" rx="20" ry="20" fill="#ffe6f2"/>
+                    <rect x="10" y="10" width="580" height="380" rx="15" ry="15" fill="#fff0f7" stroke="#ff99cc" stroke-width="3"/>
+                    <circle cx="80" cy="100" r="50" fill="#ffd6e8"/>
+                    <circle cx="70" cy="90" r="10" fill="#ff99cc"/>
+                    <circle cx="90" cy="90" r="10" fill="#ff99cc"/>
+                    <path d="M70,110 Q80,120 90,110" stroke="#ff66b3" stroke-width="3" fill="none"/>
+                    <circle cx="520" cy="300" r="40" fill="#ffb3d9"/>
+                    <circle cx="510" cy="290" r="8" fill="#ff66b3"/>
+                    <circle cx="530" cy="290" r="8" fill="#ff66b3"/>
+                    <path d="M510,310 Q520,320 530,310" stroke="#ff3399" stroke-width="2" fill="none"/>
+                    <circle cx="100" cy="300" r="20" fill="#ff66b3" opacity="0.7"/>
+                    <circle cx="500" cy="100" r="25" fill="#ff99cc" opacity="0.7"/>
+                    <path d="M200,50 C250,10 300,80 350,40" stroke="#ff66b3" stroke-width="5" fill="none" opacity="0.5"/>
+                    <path d="M400,350 C350,300 300,380 250,340" stroke="#ff99cc" stroke-width="5" fill="none" opacity="0.5"/>
+                    <text x="300" y="150" font-family="Comic Sans MS, Arial Rounded MT Bold, sans-serif" font-size="28" text-anchor="middle" fill="#ff66b3" font-weight="bold">${year} Goals Completed!</text>
+                    <text x="300" y="200" font-family="Comic Sans MS, Arial Rounded MT Bold, sans-serif" font-size="24" text-anchor="middle" fill="#5a2e48">${quote}</text>
+                    <text x="300" y="250" font-family="Comic Sans MS, Arial Rounded MT Bold, sans-serif" font-size="20" text-anchor="middle" fill="#ff99cc">🎉 Congratulations, Yomi! 🎉</text>
+                </svg>
+            `;
 
-        targetOverlay.addEventListener("click", () => {
-            targetModal.style.display = "none";
-            targetOverlay.style.display = "none";
-        });
+            const svgUrl = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+            
+            el("achievementImage").src = svgUrl;
+            el("achievementImageModal").style.display = "block";
+            el("achievementImageOverlay").style.display = "block";
+
+            const addToAchieve = () => {
+                const achieveMedia = el("achieveMedia");
+                const item = document.createElement("div");
+                item.className = "file-item";
+                
+                item.innerHTML = `
+                    <button class="delete-file" style="display: ${isAdmin ? "flex" : "none"}">×</button>
+                    <img src="${svgUrl}" class="file-icon" alt="${year} Achievement">
+                    <div class="file-name" contenteditable="${isAdmin}">${year} Goals Achievement</div>
+                `;
+
+                item.querySelector(".delete-file").addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Are you sure to delete the ${year} achievement?`)) {
+                        achieveMedia.removeChild(item);
+                    }
+                });
+
+                const nameEl = item.querySelector(".file-name");
+                nameEl.addEventListener("keydown", (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        nameEl.blur();
+                    }
+                });
+
+                if (achieveMedia.firstChild) achieveMedia.insertBefore(item, achieveMedia.firstChild);
+                else achieveMedia.appendChild(item);
+            };
+
+            el("confirmAchievementBtn").addEventListener("click", () => {
+                closeModal("achievementImageModal", "achievementImageOverlay");
+                addToAchieve();
+            });
+        }
+
+        // 打开目标编辑弹窗
+        function openEditTarget(year = null) {
+            if (!isAdmin) return;
+            
+            el("targetModal").style.display = "block";
+            el("targetOverlay").style.display = "block";
+            
+            if (year) {
+                const yearTargets = targets.filter(t => t.year === year);
+                el("targetYear").value = year;
+                el("targetContent").value = yearTargets.map(t => t.content).join("\n");
+                el("targetId").value = year;
+                editTargetId = year;
+            } else {
+                el("targetYear").value = new Date().getFullYear().toString();
+                el("targetContent").value = "";
+                el("targetId").value = "";
+                editTargetId = null;
+            }
+            
+            el("targetYear").focus();
+        }
+
+        // 添加目标
+        el("addTargetBtn").addEventListener("click", () => openEditTarget());
 
         // 保存目标
-        saveTargetBtn.addEventListener("click", () => {
-            const year = targetYear.value.trim();
-            const content = targetContent.value.trim();
+        el("saveTargetBtn").addEventListener("click", () => {
+            const year = el("targetYear").value.trim();
+            const content = el("targetContent").value.trim();
             
             if (!year || !content) {
-                alert("Please fill in both year and target content!");
-                if (!year) targetYear.focus();
-                else targetContent.focus();
+                alert("Please enter both year and target content!");
                 return;
             }
 
-            if (targetId.value) {
-                // 编辑现有目标
-                const id = parseInt(targetId.value);
-                const target = targets.find(t => t.id === id);
-                if (target) {
-                    target.year = year;
-                    target.content = content;
-                }
-            } else {
-                // 添加新目标
-                targets.push({
-                    id: targetIdCounter++,
-                    year: year,
-                    content: content,
-                    completed: false
-                });
+            const lines = content.split("\n").filter(line => line.trim());
+            if (lines.length === 0) {
+                alert("Please enter at least one target!");
+                return;
             }
 
+            if (editTargetId) targets = targets.filter(t => t.year !== year);
+
+            lines.forEach(line => {
+                targets.push({
+                    id: idCounter++,
+                    year: year,
+                    content: line.trim(),
+                    completed: false
+                });
+            });
+
             renderTargets();
-            targetModal.style.display = "none";
-            targetOverlay.style.display = "none";
+            closeModal("targetModal", "targetOverlay");
+            editTargetId = null;
+        });
+
+        // 首页编辑
+        el("profileImage").addEventListener("click", () => {
+            if (!isAdmin) return;
+            
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.click();
+            
+            input.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        el("profileImage").src = ev.target.result;
+                        alert("Profile image updated successfully!");
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        // 文字样式修改
+        el("profileTextColor").addEventListener("input", () => {
+            el("profileInfo").style.color = el("profileTextColor").value;
+        });
+
+        el("profileFont").addEventListener("change", () => {
+            el("profileInfo").style.fontFamily = el("profileFont").value;
+        });
+
+        // 贴纸功能
+        el("stickerButton").addEventListener("click", () => {
+            if (!isAdmin) return;
+            
+            if (!stickerEdit) {
+                stickerEdit = true;
+                el("stickerButton").textContent = "✅";
+                el("stickerButton").style.backgroundColor = "#ff3399";
+                
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = "image/*,video/*";
+                input.click();
+                
+                input.addEventListener("change", (e) => {
+                    const file = e.target.files[0];
+                    if (file && stickerEdit) addSticker(file);
+                });
+            } else {
+                el("stickerConfirmModal").style.display = "block";
+                el("stickerConfirmOverlay").style.display = "block";
+            }
+        });
+
+        // 添加贴纸
+        function addSticker(file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const url = ev.target.result;
+                const sticker = document.createElement("div");
+                sticker.className = "sticker-item editable";
+                sticker.style.top = "50%";
+                sticker.style.left = "50%";
+                sticker.style.width = "150px";
+                sticker.style.height = "150px";
+                
+                if (file.type.startsWith("image/")) {
+                    sticker.innerHTML = `
+                        <img src="${url}" style="width: 100%; height: 100%; object-fit: contain;">
+                        <div class="sticker-handle"></div>
+                        <div class="sticker-rotate-handle"></div>
+                    `;
+                } else if (file.type.startsWith("video/")) {
+                    sticker.innerHTML = `
+                        <video src="${url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
+                        <div class="sticker-handle"></div>
+                        <div class="sticker-rotate-handle"></div>
+                    `;
+                }
+                
+                el("stickerContainer").appendChild(sticker);
+                initStickerDrag(sticker);
+                initStickerResize(sticker);
+                initStickerRotate(sticker);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 贴纸拖拽
+        function initStickerDrag(sticker) {
+            let dragging = false, ox, oy;
+            
+            sticker.addEventListener("mousedown", (e) => {
+                if (e.target.classList.contains('sticker-handle') || e.target.classList.contains('sticker-rotate-handle')) return;
+                
+                dragging = true;
+                const rect = sticker.getBoundingClientRect();
+                ox = e.clientX - rect.left;
+                oy = e.clientY - rect.top;
+                sticker.style.zIndex = Date.now();
+                
+                const move = (e) => {
+                    if (!dragging) return;
+                    sticker.style.left = `${e.clientX - ox}px`;
+                    sticker.style.top = `${e.clientY - oy}px`;
+                };
+                
+                const up = () => {
+                    dragging = false;
+                    document.removeEventListener("mousemove", move);
+                    document.removeEventListener("mouseup", up);
+                };
+                
+                document.addEventListener("mousemove", move);
+                document.addEventListener("mouseup", up);
+            });
+        }
+
+        // 贴纸缩放
+        function initStickerResize(sticker) {
+            const handle = sticker.querySelector('.sticker-handle');
+            let resizing = false, sx, sy, sw, sh;
+            
+            handle.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                resizing = true;
+                const rect = sticker.getBoundingClientRect();
+                sx = e.clientX;
+                sy = e.clientY;
+                sw = rect.width;
+                sh = rect.height;
+                
+                const move = (e) => {
+                    if (!resizing) return;
+                    const dx = e.clientX - sx;
+                    const dy = e.clientY - sy;
+                    const nw = Math.max(50, sw + dx);
+                    const nh = Math.max(50, sh + dy);
+                    sticker.style.width = `${nw}px`;
+                    sticker.style.height = `${nh}px`;
+                };
+                
+                const up = () => {
+                    resizing = false;
+                    document.removeEventListener("mousemove", move);
+                    document.removeEventListener("mouseup", up);
+                };
+                
+                document.addEventListener("mousemove", move);
+                document.addEventListener("mouseup", up);
+            });
+        }
+
+        // 贴纸旋转
+        function initStickerRotate(sticker) {
+            const handle = sticker.querySelector('.sticker-rotate-handle');
+            let rotating = false, sAngle = 0, cAngle = 0;
+            
+            const getCenter = (el) => {
+                const rect = el.getBoundingClientRect();
+                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            };
+            
+            const getAngle = (cx, cy, ex, ey) => Math.atan2(ey - cy, ex - cx) * 180 / Math.PI;
+            
+            handle.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                rotating = true;
+                const center = getCenter(sticker);
+                sAngle = getAngle(center.x, center.y, e.clientX, e.clientY) - cAngle;
+                
+                const move = (e) => {
+                    if (!rotating) return;
+                    const center = getCenter(sticker);
+                    const nAngle = getAngle(center.x, center.y, e.clientX, e.clientY) - sAngle;
+                    cAngle = nAngle;
+                    sticker.style.transform = `rotate(${cAngle}deg)`;
+                };
+                
+                const up = () => {
+                    rotating = false;
+                    document.removeEventListener("mousemove", move);
+                    document.removeEventListener("mouseup", up);
+                };
+                
+                document.addEventListener("mousemove", move);
+                document.addEventListener("mouseup", up);
+            });
+        }
+
+        // 完成贴纸编辑
+        function finishSticker(cancel = false) {
+            if (cancel) {
+                els('.sticker-item.editable').forEach(s => s.remove());
+            } else {
+                els('.sticker-item.editable').forEach(s => {
+                    s.classList.remove('editable');
+                    s.querySelector('.sticker-handle').style.display = 'none';
+                    s.querySelector('.sticker-rotate-handle').style.display = 'none';
+                });
+            }
+            
+            stickerEdit = false;
+            el("stickerButton").textContent = "🍪";
+            el("stickerButton").style.backgroundColor = "#ff66b3";
+        }
+
+        // 确认贴纸编辑
+        el("confirmStickerBtn").addEventListener("click", () => {
+            closeModal("stickerConfirmModal", "stickerConfirmOverlay");
+            finishSticker(false);
+            alert("Stickers saved successfully!");
+        });
+
+        // 取消贴纸编辑
+        el("cancelStickerBtn").addEventListener("click", () => {
+            closeModal("stickerConfirmModal", "stickerConfirmOverlay");
+            finishSticker(true);
         });
 
         // 初始化
         function init() {
-            renderTargets();
-            // 默认显示首页
             navigateTo('home');
+            renderTargets();
+            el("profileInfo").style.color = el("profileTextColor").value;
+            el("profileInfo").style.fontFamily = el("profileFont").value;
+            
+            // ESC关闭所有弹窗
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") {
+                    els(".modal, .overlay").forEach(e => e.style.display = "none");
+                    if (stickerEdit) finishSticker(true);
+                }
+            });
         }
 
-        // 页面加载完成后初始化
-        window.addEventListener("load", init);
-
-        // 点击空白处完成编辑
-        document.addEventListener("click", (e) => {
-            // 如果点击的是空白区域，并且有元素处于编辑状态
-            const activeElement = document.activeElement;
-            if (activeElement && activeElement.isContentEditable && 
-                !activeElement.contains(e.target) && 
-                !['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) {
-                activeElement.blur();
-            }
-        });
-
-        // 确保管理员登录取消后隐藏按钮
-        window.addEventListener("beforeunload", () => {
-            isAdmin = false;
-        });
+        // 页面加载完成初始化
+        window.addEventListener("DOMContentLoaded", init);
     </script>
 </body>
 </html>
