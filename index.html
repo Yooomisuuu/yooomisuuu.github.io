@@ -92,13 +92,13 @@
         .cartoon-img:hover { transform: scale(1.02); box-shadow: 0 8px 20px rgba(255, 102, 179, 0.4); }
         
         /* 首页编辑 */
-        .profile-edit-tools { display: block; margin-top: 15px; padding: 10px; background: #fff8fc; border-radius: 10px; border: 1px solid #ffd6e8; }
+        .profile-edit-tools { display: none; margin-top: 15px; padding: 10px; background: #fff8fc; border-radius: 10px; border: 1px solid #ffd6e8; }
         .edit-tool-group { margin: 8px 0; display: flex; align-items: center; gap: 10px; }
         .edit-tool-label { font-size: 14px; color: #5a2e48; min-width: 80px; }
         .color-picker, .font-select { padding: 5px; border: 1px solid #ffb3d9; border-radius: 8px; background: white; color: #5a2e48; }
         
         /* 贴纸样式 */
-        .sticker-button { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #ff66b3; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 102, 179, 0.3); z-index: 900; transition: all 0.3s ease; }
+        .sticker-button { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #ff66b3; color: white; display: none; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 102, 179, 0.3); z-index: 900; transition: all 0.3s ease; }
         .sticker-button:hover { background: #ff3399; transform: scale(1.1); }
         /* 新增：贴纸编辑工具栏 */
         .sticker-toolbar { position: fixed; bottom: 100px; right: 30px; background: white; border-radius: 15px; padding: 10px; box-shadow: 0 4px 15px rgba(255, 102, 179, 0.3); z-index: 899; display: none; }
@@ -197,10 +197,9 @@
 
     <!-- 主内容区 -->
     <div class="main-content" id="main-content">
-        <div class="sticker-container" id="stickerContainer"></div>
-        
-        <!-- 首页 -->
+        <!-- 每个页面独立的贴纸容器 -->
         <div id="home" class="page-content">
+            <div class="sticker-container" id="stickerContainer_home"></div>
             <div class="home-page">
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/eff44eee1e6e4f2792c1775615dc2c74.JPG~tplv-a9rns2rl98-24:720:720.image?lk3s=8e244e95&rcl=202602080916150F3B363E9BA71B184F7A&rrcfp=8a172a1a&x-expires=1771118176&x-signature=rbjW80X3iJyV3cv9f5kR3omsSlc%3D" alt="Yomi's Profile" class="cartoon-img" id="profileImage">
                 <div class="profile-card">
@@ -221,7 +220,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="profile-info" id="profileInfo" contenteditable="true" style="cursor: text;">
+                    <div class="profile-info" id="profileInfo" contenteditable="false" style="cursor: default;">
                         <p><span>Name:</span> Yomi Qiu</p>
                         <p><span>Birthday:</span> 2010.03.25</p>
                         <p><span>MBTI:</span> INTJ</p>
@@ -234,46 +233,51 @@
         
         <!-- 各个功能页面 -->
         <div id="study" class="page-content" style="display: none;">
+            <div class="sticker-container" id="stickerContainer_study"></div>
             <h2 class="page-title">📚 Study Diary</h2>
             <section class="content-section">
                 <h3 class="section-title">My Study Records</h3>
-                <button class="add-folder-btn" id="studyAddFolderBtn">+ Create New Folder</button>
+                <button class="add-folder-btn" id="studyAddFolderBtn" style="display: none;">+ Create New Folder</button>
                 <div class="media-section" id="studyMedia"></div>
             </section>
         </div>
 
         <div id="vlog" class="page-content" style="display: none;">
+            <div class="sticker-container" id="stickerContainer_vlog"></div>
             <h2 class="page-title">🎥 Daily Vlog</h2>
             <section class="content-section">
                 <h3 class="section-title">My Daily Life</h3>
-                <button class="add-folder-btn" id="vlogAddFolderBtn">+ Create New Folder</button>
+                <button class="add-folder-btn" id="vlogAddFolderBtn" style="display: none;">+ Create New Folder</button>
                 <div class="media-section" id="vlogMedia"></div>
             </section>
         </div>
 
         <div id="week" class="page-content" style="display: none;">
+            <div class="sticker-container" id="stickerContainer_week"></div>
             <h2 class="page-title">📖 Week Diary</h2>
             <section class="content-section">
                 <h3 class="section-title">Weekly Reflections</h3>
-                <button class="add-folder-btn" id="weekAddFolderBtn">+ Create New Folder</button>
+                <button class="add-folder-btn" id="weekAddFolderBtn" style="display: none;">+ Create New Folder</button>
                 <div class="media-section" id="weekMedia"></div>
             </section>
         </div>
 
         <div id="achieve" class="page-content" style="display: none;">
+            <div class="sticker-container" id="stickerContainer_achieve"></div>
             <h2 class="page-title">🏆 Achievements Showcase</h2>
             <section class="content-section">
                 <h3 class="section-title">My Accomplishments</h3>
-                <button class="add-folder-btn" id="achieveAddFolderBtn">+ Create New Folder</button>
+                <button class="add-folder-btn" id="achieveAddFolderBtn" style="display: none;">+ Create New Folder</button>
                 <div class="media-section" id="achieveMedia"></div>
             </section>
         </div>
 
         <div id="target" class="page-content" style="display: none;">
+            <div class="sticker-container" id="stickerContainer_target"></div>
             <h2 class="page-title">🎯 Personal Target</h2>
             <section class="content-section personal-target">
                 <h3 class="section-title">My Goals & Dreams</h3>
-                <button class="add-target-btn" id="addTargetBtn">+ Add Target</button>
+                <button class="add-target-btn" id="addTargetBtn" style="display: none;">+ Add Target</button>
                 <div class="target-list" id="targetList"></div>
             </section>
         </div>
@@ -329,14 +333,24 @@
 
     <script>
         // 核心变量
-        const PWD = "Shining0325";
-        // 关键修改2：默认设置为管理员模式，无需登录
-        let isAdmin = true, currMedia = "", currFolder = "", editTargetId = null, stickerEdit = false;
+        const PWD = "Shining0325！"; // 密码添加感叹号
+        // 关键修改：默认关闭管理员模式
+        let isAdmin = false, currMedia = "", currFolder = "", editTargetId = null, stickerEdit = false;
         let folderIcons = {}, folderNames = {}, folderContents = {}, targets = [];
         let idCounter = 1;
         // 新增：存储当前要删除的贴纸和选中的贴纸
         let currentDeleteSticker = null;
         let selectedSticker = null;
+        // 新增：当前激活的页面ID和各页面独立的贴纸数据
+        let currentPageId = 'home';
+        let pageStickers = {
+            home: [],
+            study: [],
+            vlog: [],
+            week: [],
+            achieve: [],
+            target: []
+        };
 
         // 激励语
         const quotes = [
@@ -346,17 +360,33 @@
             "Every small step leads to big achievements! 🚀", "Consistency is key, and you nailed it! 🗝️"
         ];
 
-        // 页面导航
+        // 页面导航 - 关键修改：切换页面时加载对应贴纸
         function navigateTo(pageId) {
+            // 结束当前贴纸编辑
+            if (stickerEdit) {
+                finishSticker(true);
+            }
+            
+            // 隐藏所有页面
             document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+            // 显示目标页面
             document.getElementById(pageId).style.display = 'block';
+            currentPageId = pageId;
+            
+            // 显示/隐藏贴纸按钮（管理员模式下）
+            if (isAdmin) {
+                document.getElementById('stickerButton').style.display = 'flex';
+            }
+            
+            // 加载当前页面的贴纸
+            loadPageStickers(pageId);
         }
 
         // DOM元素获取
         const el = (id) => document.getElementById(id);
         const els = (cls) => document.querySelectorAll(cls);
         
-        // 登录/退出逻辑（保留原有逻辑，但默认已登录）
+        // 登录/退出逻辑
         el("loginBtn").addEventListener("click", () => {
             if (!isAdmin) {
                 el("loginModal").style.display = "block";
@@ -372,11 +402,24 @@
         el("confirmExitEdit").addEventListener("click", () => {
             isAdmin = false;
             el("exitEditModal").style.display = el("exitEditOverlay").style.display = "none";
+            
+            // 隐藏所有编辑相关按钮
             els(".add-folder-btn, .add-target-btn, .sticker-button, .profile-edit-tools").forEach(e => e.style.display = "none");
             els(".delete-folder, .delete-file, .target-edit-btn, .target-delete-btn").forEach(e => e.style.display = "none");
+            
+            // 禁用所有编辑功能
             el("profileInfo").contentEditable = false;
             el("profileInfo").style.cursor = "default";
+            
+            // 禁用文件夹名称编辑
+            els('.folder-name, .file-name').forEach(el => {
+                el.contentEditable = false;
+                el.style.cursor = "default";
+            });
+            
+            // 结束贴纸编辑
             if (stickerEdit) finishSticker(true);
+            
             alert("✨ Edit mode ended! You can no longer modify content.");
         });
 
@@ -385,19 +428,30 @@
             el("exitEditModal").style.display = el("exitEditOverlay").style.display = "none";
         });
 
-        // 登录验证（保留原有逻辑）
+        // 登录验证
         el("submitLogin").addEventListener("click", () => {
             if (el("passwordInput").value === PWD) {
                 isAdmin = true;
                 el("loginModal").style.display = el("loginOverlay").style.display = "none";
+                
+                // 显示所有编辑相关按钮
                 els(".add-folder-btn").forEach(e => e.style.display = "inline-block");
                 el("addTargetBtn").style.display = "inline-block";
                 el("stickerButton").style.display = "flex";
                 el("profileEditTools").style.display = "block";
+                
+                // 启用编辑功能
                 el("profileInfo").contentEditable = true;
                 el("profileInfo").style.cursor = "text";
                 els(".delete-folder, .delete-file").forEach(e => e.style.display = "flex");
                 els(".target-edit-btn, .target-delete-btn").forEach(e => e.style.display = "inline-block");
+                
+                // 启用文件夹名称编辑
+                els('.folder-name, .file-name').forEach(el => {
+                    el.contentEditable = true;
+                    el.style.cursor = "text";
+                });
+                
                 alert("✨ Edit mode begin! You can now create folders and manage content.");
             } else {
                 el("loginError").style.display = "block";
@@ -440,6 +494,10 @@
         });
         el("confirmDeleteStickerBtn").addEventListener("click", () => {
             if (currentDeleteSticker) {
+                // 从页面贴纸数据中移除
+                const stickerId = currentDeleteSticker.dataset.stickerId;
+                pageStickers[currentPageId] = pageStickers[currentPageId].filter(s => s.id !== stickerId);
+                // 从DOM中移除
                 currentDeleteSticker.remove();
                 currentDeleteSticker = null;
             }
@@ -492,14 +550,15 @@
             folder.className = "folder-item";
             folder.dataset.id = folderId;
             folder.innerHTML = `
-                <button class="delete-folder" style="display: flex">×</button>
+                <button class="delete-folder" style="display: ${isAdmin ? 'flex' : 'none'}">×</button>
                 <img src="${folderIcons[folderId]}" class="folder-icon" alt="${name}">
-                <div class="folder-name" contenteditable="true">${name}</div>
+                <div class="folder-name" contenteditable="${isAdmin}">${name}</div>
             `;
 
             // 名称编辑
             const nameEl = folder.querySelector('.folder-name');
             nameEl.addEventListener("keydown", (e) => {
+                if (!isAdmin) return;
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     nameEl.blur();
@@ -507,6 +566,7 @@
             });
 
             nameEl.addEventListener("blur", () => {
+                if (!isAdmin) return;
                 const newName = nameEl.textContent.trim() || "New Folder";
                 nameEl.textContent = newName;
                 folderNames[folderId] = newName;
@@ -515,6 +575,7 @@
             // 删除文件夹
             folder.querySelector(".delete-folder").addEventListener("click", (e) => {
                 e.stopPropagation();
+                if (!isAdmin) return;
                 if (confirm(`Are you sure to delete the folder "${nameEl.textContent}"?\nAll contents inside will also be deleted.`)) {
                     if (folderContents[folderId]) {
                         folderContents[folderId].forEach(file => {
@@ -538,14 +599,16 @@
             el(`${currMedia}Media`).appendChild(folder);
             
             // 自动重命名
-            setTimeout(() => {
-                nameEl.focus();
-                const range = document.createRange();
-                const sel = window.getSelection();
-                range.selectNodeContents(nameEl);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            }, 200);
+            if (isAdmin) {
+                setTimeout(() => {
+                    nameEl.focus();
+                    const range = document.createRange();
+                    const sel = window.getSelection();
+                    range.selectNodeContents(nameEl);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }, 200);
+            }
 
             closeModal("createFolderModal", "createFolderOverlay");
         });
@@ -579,14 +642,15 @@
                 }
 
                 fileEl.innerHTML = `
-                    <button class="delete-file" style="display: flex">×</button>
+                    <button class="delete-file" style="display: ${isAdmin ? 'flex' : 'none'}">×</button>
                     ${preview}
-                    <div class="file-name" contenteditable="true">${file.name}</div>
+                    <div class="file-name" contenteditable="${isAdmin}">${file.name}</div>
                 `;
 
                 // 文件名编辑
                 const fileNameEl = fileEl.querySelector('.file-name');
                 fileNameEl.addEventListener("keydown", (e) => {
+                    if (!isAdmin) return;
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         fileNameEl.blur();
@@ -594,6 +658,7 @@
                 });
 
                 fileNameEl.addEventListener("blur", () => {
+                    if (!isAdmin) return;
                     const newName = fileNameEl.textContent.trim() || file.originalName;
                     fileNameEl.textContent = newName;
                     folderContents[folderId][idx].name = newName;
@@ -602,6 +667,7 @@
                 // 删除文件
                 fileEl.querySelector(".delete-file").addEventListener("click", (e) => {
                     e.stopPropagation();
+                    if (!isAdmin) return;
                     if (confirm(`Are you sure to delete "${fileNameEl.textContent}"?`)) {
                         if (file.url && file.url.startsWith('blob:')) URL.revokeObjectURL(file.url);
                         folderContents[folderId].splice(idx, 1);
@@ -612,7 +678,7 @@
                 el("folderMediaContent").appendChild(fileEl);
                 
                 // 新文件自动重命名
-                if (file.isNew) {
+                if (file.isNew && isAdmin) {
                     setTimeout(() => {
                         fileNameEl.focus();
                         const range = document.createRange();
@@ -724,12 +790,12 @@
                     if (checked) generateAchievement(y);
                 });
 
-                // 操作按钮（关键修改3：移除登录判断，直接显示）
+                // 操作按钮
                 const actions = document.createElement("div");
                 actions.className = "target-actions";
                 actions.innerHTML = `
-                    <button class="target-edit-btn" data-year="${year}">✏️ Edit</button>
-                    <button class="target-delete-btn" data-year="${year}">🗑️ Delete</button>
+                    <button class="target-edit-btn" style="display: ${isAdmin ? 'inline-block' : 'none'}" data-year="${year}">✏️ Edit</button>
+                    <button class="target-delete-btn" style="display: ${isAdmin ? 'inline-block' : 'none'}" data-year="${year}">🗑️ Delete</button>
                 `;
 
                 // 编辑按钮
@@ -737,6 +803,7 @@
                 
                 // 删除按钮
                 actions.querySelector(".target-delete-btn").addEventListener("click", () => {
+                    if (!isAdmin) return;
                     if (confirm(`Are you sure to delete all goals for ${year}?`)) {
                         targets = targets.filter(t => t.year !== year);
                         renderTargets();
@@ -795,13 +862,14 @@
                 item.className = "file-item";
                 
                 item.innerHTML = `
-                    <button class="delete-file" style="display: flex">×</button>
+                    <button class="delete-file" style="display: ${isAdmin ? 'flex' : 'none'}">×</button>
                     <img src="${svgUrl}" class="file-icon" alt="${year} Achievement">
-                    <div class="file-name" contenteditable="true">${year} Goals Achievement</div>
+                    <div class="file-name" contenteditable="${isAdmin}">${year} Goals Achievement</div>
                 `;
 
                 item.querySelector(".delete-file").addEventListener("click", (e) => {
                     e.stopPropagation();
+                    if (!isAdmin) return;
                     if (confirm(`Are you sure to delete the ${year} achievement?`)) {
                         achieveMedia.removeChild(item);
                     }
@@ -809,6 +877,7 @@
 
                 const nameEl = item.querySelector(".file-name");
                 nameEl.addEventListener("keydown", (e) => {
+                    if (!isAdmin) return;
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         nameEl.blur();
@@ -825,8 +894,10 @@
             });
         }
 
-        // 打开目标编辑弹窗（移除登录判断）
+        // 打开目标编辑弹窗
         function openEditTarget(year = null) {
+            if (!isAdmin) return;
+            
             el("targetModal").style.display = "block";
             el("targetOverlay").style.display = "block";
             
@@ -851,6 +922,8 @@
 
         // 保存目标
         el("saveTargetBtn").addEventListener("click", () => {
+            if (!isAdmin) return;
+            
             const year = el("targetYear").value.trim();
             const content = el("targetContent").value.trim();
             
@@ -883,6 +956,8 @@
 
         // 首页编辑
         el("profileImage").addEventListener("click", () => {
+            if (!isAdmin) return;
+            
             const input = document.createElement("input");
             input.type = "file";
             input.accept = "image/*";
@@ -903,15 +978,107 @@
 
         // 文字样式修改
         el("profileTextColor").addEventListener("input", () => {
+            if (!isAdmin) return;
             el("profileInfo").style.color = el("profileTextColor").value;
         });
 
         el("profileFont").addEventListener("change", () => {
+            if (!isAdmin) return;
             el("profileInfo").style.fontFamily = el("profileFont").value;
         });
 
-        // 贴纸功能 - 核心修改
+        // ========== 贴纸功能 - 关键修改：页面独立贴纸 ==========
+        
+        // 保存当前页面的贴纸状态
+        function savePageStickers(pageId) {
+            const container = el(`stickerContainer_${pageId}`);
+            const stickers = [];
+            
+            container.querySelectorAll('.sticker-item').forEach(sticker => {
+                const stickerData = {
+                    id: sticker.dataset.stickerId,
+                    type: sticker.dataset.type,
+                    url: sticker.dataset.url,
+                    top: sticker.style.top,
+                    left: sticker.style.left,
+                    width: sticker.style.width,
+                    height: sticker.style.height,
+                    transform: sticker.style.transform
+                };
+                stickers.push(stickerData);
+            });
+            
+            pageStickers[pageId] = stickers;
+        }
+
+        // 加载指定页面的贴纸
+        function loadPageStickers(pageId) {
+            const container = el(`stickerContainer_${pageId}`);
+            container.innerHTML = "";
+            
+            const stickers = pageStickers[pageId] || [];
+            stickers.forEach(stickerData => {
+                const sticker = document.createElement("div");
+                sticker.className = "sticker-item";
+                sticker.dataset.stickerId = stickerData.id;
+                sticker.dataset.type = stickerData.type;
+                sticker.dataset.url = stickerData.url;
+                sticker.style.top = stickerData.top;
+                sticker.style.left = stickerData.left;
+                sticker.style.width = stickerData.width;
+                sticker.style.height = stickerData.height;
+                sticker.style.transform = stickerData.transform;
+                
+                if (stickerData.type.startsWith("image/")) {
+                    sticker.innerHTML = `
+                        <img src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;">
+                        <div class="sticker-handle"></div>
+                        <div class="sticker-rotate-handle"></div>
+                        <div class="sticker-flip-handle">🔄</div>
+                    `;
+                } else if (stickerData.type.startsWith("video/")) {
+                    sticker.innerHTML = `
+                        <video src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
+                        <div class="sticker-handle"></div>
+                        <div class="sticker-rotate-handle"></div>
+                        <div class="sticker-flip-handle">🔄</div>
+                    `;
+                }
+                
+                // 贴纸选中逻辑
+                sticker.addEventListener("click", (e) => {
+                    if (!stickerEdit) return;
+                    e.stopPropagation();
+                    
+                    // 取消其他贴纸的选中状态
+                    els('.sticker-item').forEach(s => {
+                        s.style.outline = 'none';
+                    });
+                    
+                    // 设置当前贴纸为选中状态
+                    selectedSticker = sticker;
+                    sticker.style.outline = '2px solid #ff66b3';
+                });
+                
+                // 双击删除
+                sticker.addEventListener("dblclick", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentDeleteSticker = sticker;
+                    el("deleteStickerModal").style.display = "block";
+                    el("deleteStickerOverlay").style.display = "block";
+                });
+                
+                container.appendChild(sticker);
+                initStickerDrag(sticker);
+                initStickerResize(sticker);
+                initStickerRotate(sticker);
+            });
+        }
+
         el("stickerButton").addEventListener("click", () => {
+            if (!isAdmin) return;
+            
             if (!stickerEdit) {
                 // 进入编辑模式
                 stickerEdit = true;
@@ -919,8 +1086,9 @@
                 el("stickerButton").style.backgroundColor = "#ff3399";
                 el("stickerToolbar").style.display = "block"; // 显示工具栏
                 
-                // 把所有现有贴纸设为可编辑
-                els('.sticker-item').forEach(sticker => {
+                // 把当前页面所有现有贴纸设为可编辑
+                const container = el(`stickerContainer_${currentPageId}`);
+                container.querySelectorAll('.sticker-item').forEach(sticker => {
                     sticker.classList.add('editable');
                     sticker.style.pointerEvents = 'all';
                 });
@@ -934,7 +1102,7 @@
             }
         });
 
-        // 新增：打开贴纸文件选择器
+        // 打开贴纸文件选择器
         function openStickerFileSelector() {
             const input = document.createElement("input");
             input.type = "file";
@@ -951,12 +1119,12 @@
             });
         }
 
-        // 新增：绑定添加新贴纸按钮
+        // 绑定添加新贴纸按钮
         el("addNewStickerBtn").addEventListener("click", () => {
             if (stickerEdit) openStickerFileSelector();
         });
 
-        // 新增：翻转功能实现
+        // 翻转功能实现
         function flipSticker(sticker, direction) {
             if (!sticker) return;
             
@@ -971,7 +1139,7 @@
             let newTransform = currentTransform.replace(/scaleX\(-?1\)|scaleY\(-?1\)/g, '').trim();
             if (newTransform === 'none') newTransform = '';
             
-            if (direction === 'horizontal') {
+                        if (direction === 'horizontal') {
                 // 水平翻转（左右）
                 newTransform += (newTransform ? ' ' : '') + (hasScaleX ? 'scaleX(1)' : 'scaleX(-1)');
             } else if (direction === 'vertical') {
@@ -979,263 +1147,446 @@
                 newTransform += (newTransform ? ' ' : '') + (hasScaleY ? 'scaleY(1)' : 'scaleY(-1)');
             }
             
-            sticker.style.transform = newTransform || 'none';
+            // 应用新的transform
+            sticker.style.transform = newTransform.trim() || 'none';
         }
 
-        // 新增：绑定水平翻转按钮
+        // 绑定翻转按钮事件
         el("flipHorizontalBtn").addEventListener("click", () => {
-            if (selectedSticker) {
+            if (selectedSticker && stickerEdit) {
                 flipSticker(selectedSticker, 'horizontal');
             } else {
-                alert("Please select a sticker first (click on a sticker to select it)");
+                alert("Please select a sticker first!");
             }
         });
 
-        // 新增：绑定垂直翻转按钮
         el("flipVerticalBtn").addEventListener("click", () => {
-            if (selectedSticker) {
+            if (selectedSticker && stickerEdit) {
                 flipSticker(selectedSticker, 'vertical');
             } else {
-                alert("Please select a sticker first (click on a sticker to select it)");
+                alert("Please select a sticker first!");
             }
         });
 
-        // 添加贴纸
+        // 添加贴纸到当前页面
         function addSticker(file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const url = ev.target.result;
-                const sticker = document.createElement("div");
-                sticker.className = "sticker-item editable";
-                sticker.style.top = "50%";
-                sticker.style.left = "50%";
-                sticker.style.width = "150px";
-                sticker.style.height = "150px";
+            if (!stickerEdit) return;
+            
+            const stickerId = `sticker_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const url = URL.createObjectURL(file);
+            
+            const sticker = document.createElement("div");
+            sticker.className = "sticker-item editable";
+            sticker.dataset.stickerId = stickerId;
+            sticker.dataset.type = file.type;
+            sticker.dataset.url = url;
+            
+            // 默认位置和大小
+            const mainContent = el("main-content");
+            const rect = mainContent.getBoundingClientRect();
+            const defaultSize = 150;
+            
+            sticker.style.top = `${rect.top + 50 + Math.random() * 200}px`;
+            sticker.style.left = `${rect.left + 50 + Math.random() * 300}px`;
+            sticker.style.width = `${defaultSize}px`;
+            sticker.style.height = `${defaultSize}px`;
+            sticker.style.transform = 'none';
+            
+            // 创建贴纸内容
+            if (file.type.startsWith("image/")) {
+                sticker.innerHTML = `
+                    <img src="${url}" style="width: 100%; height: 100%; object-fit: contain;">
+                    <div class="sticker-handle"></div>
+                    <div class="sticker-rotate-handle"></div>
+                    <div class="sticker-flip-handle">🔄</div>
+                `;
+            } else if (file.type.startsWith("video/")) {
+                sticker.innerHTML = `
+                    <video src="${url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
+                    <div class="sticker-handle"></div>
+                    <div class="sticker-rotate-handle"></div>
+                    <div class="sticker-flip-handle">🔄</div>
+                `;
+            }
+            
+            // 贴纸选中逻辑
+            sticker.addEventListener("click", (e) => {
+                if (!stickerEdit) return;
+                e.stopPropagation();
                 
-                // 新增：贴纸选中逻辑
-                sticker.addEventListener("click", (e) => {
-                    if (!stickerEdit) return;
-                    e.stopPropagation();
-                    
-                    // 取消其他贴纸的选中状态
-                    els('.sticker-item').forEach(s => {
-                        s.style.outline = 'none';
-                    });
-                    
-                    // 设置当前贴纸为选中状态
-                    selectedSticker = sticker;
-                    sticker.style.outline = '2px solid #ff66b3';
-                });
-                
-                if (file.type.startsWith("image/")) {
-                    sticker.innerHTML = `
-                        <img src="${url}" style="width: 100%; height: 100%; object-fit: contain;">
-                        <div class="sticker-handle"></div>
-                        <div class="sticker-rotate-handle"></div>
-                        <div class="sticker-flip-handle">🔄</div>
-                    `;
-                } else if (file.type.startsWith("video/")) {
-                    sticker.innerHTML = `
-                        <video src="${url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
-                        <div class="sticker-handle"></div>
-                        <div class="sticker-rotate-handle"></div>
-                        <div class="sticker-flip-handle">🔄</div>
-                    `;
-                }
-                
-                // 新增：添加双击事件
-                sticker.addEventListener("dblclick", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    currentDeleteSticker = sticker;
-                    el("deleteStickerModal").style.display = "block";
-                    el("deleteStickerOverlay").style.display = "block";
-                });
-                
-                el("stickerContainer").appendChild(sticker);
-                initStickerDrag(sticker);
-                initStickerResize(sticker);
-                initStickerRotate(sticker);
-                
-                // 默认选中新添加的贴纸
-                selectedSticker = sticker;
+                // 取消其他贴纸的选中状态
                 els('.sticker-item').forEach(s => {
-                    s.style.outline = s === sticker ? '2px solid #ff66b3' : 'none';
+                    s.style.outline = 'none';
                 });
-            };
-            reader.readAsDataURL(file);
+                
+                // 设置当前贴纸为选中状态
+                selectedSticker = sticker;
+                sticker.style.outline = '2px solid #ff66b3';
+            });
+            
+            // 双击删除
+            sticker.addEventListener("dblclick", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                currentDeleteSticker = sticker;
+                el("deleteStickerModal").style.display = "block";
+                el("deleteStickerOverlay").style.display = "block";
+            });
+            
+            // 添加到当前页面的贴纸容器
+            const container = el(`stickerContainer_${currentPageId}`);
+            container.appendChild(sticker);
+            
+            // 初始化贴纸交互
+            initStickerDrag(sticker);
+            initStickerResize(sticker);
+            initStickerRotate(sticker);
+            
+            // 选中新添加的贴纸
+            selectedSticker = sticker;
+            sticker.style.outline = '2px solid #ff66b3';
         }
 
-        // 贴纸拖拽
+        // 贴纸拖拽功能
         function initStickerDrag(sticker) {
-            let dragging = false, ox, oy;
+            let isDragging = false;
+            let startX, startY, startTop, startLeft;
             
             sticker.addEventListener("mousedown", (e) => {
-                if (e.target.classList.contains('sticker-handle') || 
-                    e.target.classList.contains('sticker-rotate-handle') ||
-                    e.target.classList.contains('sticker-flip-handle')) return;
+                if (!stickerEdit || e.target.classList.contains('sticker-handle') || 
+                    e.target.classList.contains('sticker-rotate-handle') || 
+                    e.target.classList.contains('sticker-flip-handle')) {
+                    return;
+                }
                 
-                dragging = true;
-                const rect = sticker.getBoundingClientRect();
-                ox = e.clientX - rect.left;
-                oy = e.clientY - rect.top;
-                sticker.style.zIndex = Date.now();
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
                 
-                const move = (e) => {
-                    if (!dragging) return;
-                    sticker.style.left = `${e.clientX - ox}px`;
-                    sticker.style.top = `${e.clientY - oy}px`;
-                };
+                // 获取当前位置
+                startTop = parseFloat(sticker.style.top) || 0;
+                startLeft = parseFloat(sticker.style.left) || 0;
                 
-                const up = () => {
-                    dragging = false;
-                    document.removeEventListener("mousemove", move);
-                    document.removeEventListener("mouseup", up);
-                };
+                // 提升层级
+                sticker.style.zIndex = 999;
                 
-                document.addEventListener("mousemove", move);
-                document.addEventListener("mouseup", up);
+                // 选中当前贴纸
+                els('.sticker-item').forEach(s => {
+                    s.style.outline = 'none';
+                });
+                selectedSticker = sticker;
+                sticker.style.outline = '2px solid #ff66b3';
+                
+                // 阻止事件冒泡
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            
+            document.addEventListener("mousemove", (e) => {
+                if (!isDragging || !stickerEdit) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                sticker.style.top = `${startTop + dy}px`;
+                sticker.style.left = `${startLeft + dx}px`;
+            });
+            
+            document.addEventListener("mouseup", () => {
+                if (isDragging) {
+                    isDragging = false;
+                    sticker.style.zIndex = '';
+                }
+            });
+            
+            // 移动端支持
+            sticker.addEventListener("touchstart", (e) => {
+                if (!stickerEdit || e.target.classList.contains('sticker-handle') || 
+                    e.target.classList.contains('sticker-rotate-handle') || 
+                    e.target.classList.contains('sticker-flip-handle')) {
+                    return;
+                }
+                
+                isDragging = true;
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                
+                startTop = parseFloat(sticker.style.top) || 0;
+                startLeft = parseFloat(sticker.style.left) || 0;
+                
+                sticker.style.zIndex = 999;
+                
+                els('.sticker-item').forEach(s => {
+                    s.style.outline = 'none';
+                });
+                selectedSticker = sticker;
+                sticker.style.outline = '2px solid #ff66b3';
+                
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            
+            document.addEventListener("touchmove", (e) => {
+                if (!isDragging || !stickerEdit) return;
+                
+                const touch = e.touches[0];
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+                
+                sticker.style.top = `${startTop + dy}px`;
+                sticker.style.left = `${startLeft + dx}px`;
+                
+                e.preventDefault();
+            });
+            
+            document.addEventListener("touchend", () => {
+                if (isDragging) {
+                    isDragging = false;
+                    sticker.style.zIndex = '';
+                }
             });
         }
 
-        // 贴纸缩放
+        // 贴纸缩放功能
         function initStickerResize(sticker) {
             const handle = sticker.querySelector('.sticker-handle');
-            let resizing = false, sx, sy, sw, sh;
+            if (!handle) return;
+            
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight;
             
             handle.addEventListener("mousedown", (e) => {
+                if (!stickerEdit) return;
+                
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                startWidth = parseFloat(sticker.style.width) || 100;
+                startHeight = parseFloat(sticker.style.height) || 100;
+                
+                // 提升层级
+                sticker.style.zIndex = 999;
+                
                 e.preventDefault();
                 e.stopPropagation();
+            });
+            
+            document.addEventListener("mousemove", (e) => {
+                if (!isResizing || !stickerEdit) return;
                 
-                resizing = true;
-                const rect = sticker.getBoundingClientRect();
-                sx = e.clientX;
-                sy = e.clientY;
-                sw = rect.width;
-                sh = rect.height;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
                 
-                const move = (e) => {
-                    if (!resizing) return;
-                    const dx = e.clientX - sx;
-                    const dy = e.clientY - sy;
-                    const nw = Math.max(50, sw + dx);
-                    const nh = Math.max(50, sh + dy);
-                    sticker.style.width = `${nw}px`;
-                    sticker.style.height = `${nh}px`;
-                };
+                // 保持宽高比
+                const aspectRatio = startWidth / startHeight;
+                const newWidth = Math.max(50, startWidth + dx);
+                const newHeight = Math.max(50, newWidth / aspectRatio);
                 
-                const up = () => {
-                    resizing = false;
-                    document.removeEventListener("mousemove", move);
-                    document.removeEventListener("mouseup", up);
-                };
+                sticker.style.width = `${newWidth}px`;
+                sticker.style.height = `${newHeight}px`;
+            });
+            
+            document.addEventListener("mouseup", () => {
+                if (isResizing) {
+                    isResizing = false;
+                    sticker.style.zIndex = '';
+                }
+            });
+            
+            // 移动端支持
+            handle.addEventListener("touchstart", (e) => {
+                if (!stickerEdit) return;
                 
-                document.addEventListener("mousemove", move);
-                document.addEventListener("mouseup", up);
+                isResizing = true;
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                
+                startWidth = parseFloat(sticker.style.width) || 100;
+                startHeight = parseFloat(sticker.style.height) || 100;
+                
+                sticker.style.zIndex = 999;
+                
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            
+            document.addEventListener("touchmove", (e) => {
+                if (!isResizing || !stickerEdit) return;
+                
+                const touch = e.touches[0];
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+                
+                const aspectRatio = startWidth / startHeight;
+                const newWidth = Math.max(50, startWidth + dx);
+                const newHeight = Math.max(50, newWidth / aspectRatio);
+                
+                sticker.style.width = `${newWidth}px`;
+                sticker.style.height = `${newHeight}px`;
+                
+                e.preventDefault();
+            });
+            
+            document.addEventListener("touchend", () => {
+                if (isResizing) {
+                    isResizing = false;
+                    sticker.style.zIndex = '';
+                }
             });
         }
 
-        // 贴纸旋转
+        // 贴纸旋转功能
         function initStickerRotate(sticker) {
             const handle = sticker.querySelector('.sticker-rotate-handle');
-            let rotating = false, sAngle = 0, cAngle = 0;
+            if (!handle) return;
             
-            const getCenter = (el) => {
-                const rect = el.getBoundingClientRect();
-                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-            };
+            let isRotating = false;
+            let startX, startY, startAngle = 0;
             
-                        const getAngle = (cx, cy, ex, ey) => {
-                const dy = ey - cy;
-                const dx = ex - cx;
-                let theta = Math.atan2(dy, dx);
-                theta *= 180 / Math.PI;
-                return theta;
-            };
+            // 获取当前旋转角度
+            function getCurrentRotation() {
+                const transform = sticker.style.transform || 'none';
+                const match = transform.match(/rotate\((\d+)deg\)/);
+                return match ? parseInt(match[1]) : 0;
+            }
             
             handle.addEventListener("mousedown", (e) => {
+                if (!stickerEdit) return;
+                
+                isRotating = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startAngle = getCurrentRotation();
+                
+                // 提升层级
+                sticker.style.zIndex = 999;
+                
                 e.preventDefault();
                 e.stopPropagation();
+            });
+            
+            document.addEventListener("mousemove", (e) => {
+                if (!isRotating || !stickerEdit) return;
                 
-                rotating = true;
-                const center = getCenter(sticker);
-                sAngle = getAngle(center.x, center.y, e.clientX, e.clientY);
+                // 获取贴纸中心位置
+                const rect = sticker.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
                 
-                // 获取当前旋转角度
-                const transform = sticker.style.transform || '';
-                const rotateMatch = transform.match(/rotate\((\d+)deg\)/);
-                cAngle = rotateMatch ? parseInt(rotateMatch[1]) : 0;
+                // 计算角度
+                const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
                 
-                const move = (e) => {
-                    if (!rotating) return;
-                    const center = getCenter(sticker);
-                    const newAngle = getAngle(center.x, center.y, e.clientX, e.clientY);
-                    const diff = newAngle - sAngle;
-                    const total = cAngle + diff;
-                    
-                    // 保留现有transform属性（如翻转），只更新旋转角度
-                    let newTransform = transform.replace(/rotate\(\d+deg\)/, '') + ` rotate(${total}deg)`;
-                    sticker.style.transform = newTransform.trim() || 'none';
-                };
+                // 应用旋转
+                let currentTransform = sticker.style.transform || '';
+                currentTransform = currentTransform.replace(/rotate\(\d+deg\)/g, '').trim();
+                sticker.style.transform = `${currentTransform} ${currentTransform ? ' ' : ''}rotate(${Math.round(angle)}deg)`;
+            });
+            
+            document.addEventListener("mouseup", () => {
+                if (isRotating) {
+                    isRotating = false;
+                    sticker.style.zIndex = '';
+                }
+            });
+            
+            // 移动端支持
+            handle.addEventListener("touchstart", (e) => {
+                if (!stickerEdit) return;
                 
-                const up = () => {
-                    rotating = false;
-                    document.removeEventListener("mousemove", move);
-                    document.removeEventListener("mouseup", up);
-                };
+                isRotating = true;
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                startAngle = getCurrentRotation();
                 
-                document.addEventListener("mousemove", move);
-                document.addEventListener("mouseup", up);
+                sticker.style.zIndex = 999;
+                
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            
+            document.addEventListener("touchmove", (e) => {
+                if (!isRotating || !stickerEdit) return;
+                
+                const touch = e.touches[0];
+                const rect = sticker.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                const angle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * (180 / Math.PI);
+                
+                let currentTransform = sticker.style.transform || '';
+                currentTransform = currentTransform.replace(/rotate\(\d+deg\)/g, '').trim();
+                sticker.style.transform = `${currentTransform} ${currentTransform ? ' ' : ''}rotate(${Math.round(angle)}deg)`;
+                
+                e.preventDefault();
+            });
+            
+            document.addEventListener("touchend", () => {
+                if (isRotating) {
+                    isRotating = false;
+                    sticker.style.zIndex = '';
+                }
             });
         }
 
         // 完成贴纸编辑
-        function finishSticker(force = false) {
+        function finishSticker(save = true) {
+            if (save) {
+                // 保存当前页面的贴纸状态
+                savePageStickers(currentPageId);
+            }
+            
+            // 退出编辑模式
             stickerEdit = false;
             el("stickerButton").textContent = "🍪";
             el("stickerButton").style.backgroundColor = "#ff66b3";
             el("stickerToolbar").style.display = "none";
             
-            // 移除所有贴纸的可编辑状态
-            els('.sticker-item').forEach(sticker => {
+            // 移除所有贴纸的编辑状态
+            const container = el(`stickerContainer_${currentPageId}`);
+            container.querySelectorAll('.sticker-item').forEach(sticker => {
                 sticker.classList.remove('editable');
-                sticker.style.pointerEvents = 'auto'; // 保留点击交互但移除编辑手柄
-                sticker.style.outline = 'none'; // 清除选中状态
+                sticker.style.outline = 'none';
+                sticker.style.pointerEvents = 'none';
             });
             
             selectedSticker = null;
-            if (!force) {
-                closeModal("stickerConfirmModal", "stickerConfirmOverlay");
-                alert("✨ Sticker changes saved successfully!");
-            }
         }
 
         // 确认完成贴纸编辑
-        el("confirmStickerBtn").addEventListener("click", () => finishSticker());
-        
-        // 取消完成贴纸编辑
+        el("confirmStickerBtn").addEventListener("click", () => {
+            finishSticker(true);
+            closeModal("stickerConfirmModal", "stickerConfirmOverlay");
+            alert("✨ Sticker changes saved successfully!");
+        });
+
+        // 取消贴纸编辑
         el("cancelStickerBtn").addEventListener("click", () => {
+            finishSticker(false);
+            // 重新加载贴纸恢复到之前的状态
+            loadPageStickers(currentPageId);
             closeModal("stickerConfirmModal", "stickerConfirmOverlay");
         });
 
         // 初始化页面
         window.addEventListener("DOMContentLoaded", () => {
-            // 默认显示首页
+            // 初始显示首页
             navigateTo('home');
             
-            // 默认显示管理员编辑模式的所有按钮
-            if (isAdmin) {
-                els(".add-folder-btn").forEach(e => e.style.display = "inline-block");
-                el("addTargetBtn").style.display = "inline-block";
-                el("stickerButton").style.display = "flex";
-                el("profileEditTools").style.display = "block";
-                el("profileInfo").contentEditable = true;
-                el("profileInfo").style.cursor = "text";
-                els(".delete-folder, .delete-file").forEach(e => e.style.display = "flex");
-                els(".target-edit-btn, .target-delete-btn").forEach(e => e.style.display = "inline-block");
-            }
+            // 点击空白处取消贴纸选中
+            document.addEventListener("click", (e) => {
+                if (stickerEdit && !e.target.closest('.sticker-item')) {
+                    els('.sticker-item').forEach(s => {
+                        s.style.outline = 'none';
+                    });
+                    selectedSticker = null;
+                }
+            });
         });
     </script>
 </body>
 </html>
-            
