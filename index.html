@@ -27,7 +27,7 @@
         .section-title { color: #ff66b3; font-size: 20px; margin-bottom: 1rem; border-bottom: 2px solid #ffb3d9; padding-bottom: 0.5rem; text-shadow: 1px 1px 2px #ffd6e8; }
         
         /* 按钮样式 */
-        .add-folder-btn, .add-target-btn { display: none; padding: 10px 20px; background: #ff66b3; color: white; border: none; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .add-folder-btn, .add-target-btn { display: inline-block; padding: 10px 20px; background: #ff66b3; color: white; border: none; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .add-folder-btn:hover, .add-target-btn:hover { background: #ff3399; transform: scale(1.05); }
         .add-target-btn { position: absolute; top: 25px; right: 25px; }
         
@@ -40,7 +40,7 @@
         .file-name { font-size: 13px; }
         
         /* 删除按钮 */
-        .delete-folder, .delete-file { position: absolute; top: 8px; right: 8px; background: #ff6666; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 12px; opacity: 0.8; }
+        .delete-folder, .delete-file { position: absolute; top: 8px; right: 8px; background: #ff6666; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 12px; opacity: 0.8; }
         .delete-folder:hover, .delete-file:hover { background: #ff3333; transform: scale(1.1); opacity: 1; }
         
         /* 目标样式 */
@@ -53,7 +53,8 @@
         .goal-checkbox { margin-right: 10px; margin-top: 3px; width: 16px; height: 16px; accent-color: #ff66b3; cursor: pointer; }
         .goal-content { flex: 1; word-break: break-word; }
         .target-actions { margin-top: 10px; display: flex; gap: 10px; margin-left: 30px; }
-        .target-edit-btn, .target-delete-btn { padding: 5px 10px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; font-size: 12px; display: none; }
+        /* 关键修改1：默认显示编辑/删除按钮 */
+        .target-edit-btn, .target-delete-btn { padding: 5px 10px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; font-size: 12px; display: inline-block; }
         .target-edit-btn { background: #ffb3d9; color: white; }
         .target-edit-btn:hover { background: #ff99cc; }
         .target-delete-btn { background: #ff6666; color: white; }
@@ -90,13 +91,13 @@
         .cartoon-img:hover { transform: scale(1.02); box-shadow: 0 8px 20px rgba(255, 102, 179, 0.4); }
         
         /* 首页编辑 */
-        .profile-edit-tools { display: none; margin-top: 15px; padding: 10px; background: #fff8fc; border-radius: 10px; border: 1px solid #ffd6e8; }
+        .profile-edit-tools { display: block; margin-top: 15px; padding: 10px; background: #fff8fc; border-radius: 10px; border: 1px solid #ffd6e8; }
         .edit-tool-group { margin: 8px 0; display: flex; align-items: center; gap: 10px; }
         .edit-tool-label { font-size: 14px; color: #5a2e48; min-width: 80px; }
         .color-picker, .font-select { padding: 5px; border: 1px solid #ffb3d9; border-radius: 8px; background: white; color: #5a2e48; }
         
         /* 贴纸样式 */
-        .sticker-button { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #ff66b3; color: white; display: none; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 102, 179, 0.3); z-index: 900; transition: all 0.3s ease; }
+        .sticker-button { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #ff66b3; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 102, 179, 0.3); z-index: 900; transition: all 0.3s ease; }
         .sticker-button:hover { background: #ff3399; transform: scale(1.1); }
         .sticker-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 800; }
         .sticker-item { position: absolute; cursor: move; pointer-events: all; transform-origin: center center; transition: all 0.1s ease; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -194,7 +195,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="profile-info" id="profileInfo" contenteditable="false">
+                    <div class="profile-info" id="profileInfo" contenteditable="true" style="cursor: text;">
                         <p><span>Name:</span> Yomi Qiu</p>
                         <p><span>Birthday:</span> 2010.03.25</p>
                         <p><span>MBTI:</span> INTJ</p>
@@ -298,7 +299,8 @@
     <script>
         // 核心变量
         const PWD = "Shining0325";
-        let isAdmin = false, currMedia = "", currFolder = "", editTargetId = null, stickerEdit = false;
+        // 关键修改2：默认设置为管理员模式，无需登录
+        let isAdmin = true, currMedia = "", currFolder = "", editTargetId = null, stickerEdit = false;
         let folderIcons = {}, folderNames = {}, folderContents = {}, targets = [];
         let idCounter = 1;
 
@@ -320,7 +322,7 @@
         const el = (id) => document.getElementById(id);
         const els = (cls) => document.querySelectorAll(cls);
         
-        // 登录/退出逻辑
+        // 登录/退出逻辑（保留原有逻辑，但默认已登录）
         el("loginBtn").addEventListener("click", () => {
             if (!isAdmin) {
                 el("loginModal").style.display = "block";
@@ -349,7 +351,7 @@
             el("exitEditModal").style.display = el("exitEditOverlay").style.display = "none";
         });
 
-        // 登录验证
+        // 登录验证（保留原有逻辑）
         el("submitLogin").addEventListener("click", () => {
             if (el("passwordInput").value === PWD) {
                 isAdmin = true;
@@ -442,9 +444,9 @@
             folder.className = "folder-item";
             folder.dataset.id = folderId;
             folder.innerHTML = `
-                <button class="delete-folder" style="display: ${isAdmin ? "flex" : "none"}">×</button>
+                <button class="delete-folder" style="display: flex">×</button>
                 <img src="${folderIcons[folderId]}" class="folder-icon" alt="${name}">
-                <div class="folder-name" contenteditable="${isAdmin}">${name}</div>
+                <div class="folder-name" contenteditable="true">${name}</div>
             `;
 
             // 名称编辑
@@ -529,9 +531,9 @@
                 }
 
                 fileEl.innerHTML = `
-                    <button class="delete-file" style="display: ${isAdmin ? "flex" : "none"}">×</button>
+                    <button class="delete-file" style="display: flex">×</button>
                     ${preview}
-                    <div class="file-name" contenteditable="${isAdmin}">${file.name}</div>
+                    <div class="file-name" contenteditable="true">${file.name}</div>
                 `;
 
                 // 文件名编辑
@@ -674,12 +676,12 @@
                     if (checked) generateAchievement(y);
                 });
 
-                // 操作按钮
+                // 操作按钮（关键修改3：移除登录判断，直接显示）
                 const actions = document.createElement("div");
                 actions.className = "target-actions";
                 actions.innerHTML = `
-                    <button class="target-edit-btn" data-year="${year}" style="${isAdmin ? "inline-block" : "none"}">✏️ Edit</button>
-                    <button class="target-delete-btn" data-year="${year}" style="${isAdmin ? "inline-block" : "none"}">🗑️ Delete</button>
+                    <button class="target-edit-btn" data-year="${year}">✏️ Edit</button>
+                    <button class="target-delete-btn" data-year="${year}">🗑️ Delete</button>
                 `;
 
                 // 编辑按钮
@@ -745,9 +747,9 @@
                 item.className = "file-item";
                 
                 item.innerHTML = `
-                    <button class="delete-file" style="display: ${isAdmin ? "flex" : "none"}">×</button>
+                    <button class="delete-file" style="display: flex">×</button>
                     <img src="${svgUrl}" class="file-icon" alt="${year} Achievement">
-                    <div class="file-name" contenteditable="${isAdmin}">${year} Goals Achievement</div>
+                    <div class="file-name" contenteditable="true">${year} Goals Achievement</div>
                 `;
 
                 item.querySelector(".delete-file").addEventListener("click", (e) => {
@@ -775,10 +777,8 @@
             });
         }
 
-        // 打开目标编辑弹窗
+        // 打开目标编辑弹窗（移除登录判断）
         function openEditTarget(year = null) {
-            if (!isAdmin) return;
-            
             el("targetModal").style.display = "block";
             el("targetOverlay").style.display = "block";
             
@@ -835,8 +835,6 @@
 
         // 首页编辑
         el("profileImage").addEventListener("click", () => {
-            if (!isAdmin) return;
-            
             const input = document.createElement("input");
             input.type = "file";
             input.accept = "image/*";
@@ -866,8 +864,6 @@
 
         // 贴纸功能
         el("stickerButton").addEventListener("click", () => {
-            if (!isAdmin) return;
-            
             if (!stickerEdit) {
                 stickerEdit = true;
                 el("stickerButton").textContent = "✅";
