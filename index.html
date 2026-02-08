@@ -119,8 +119,8 @@
             text-shadow: 1px 1px 2px #ffd6e8;
         }
 
-        /* 按钮样式统一 */
-        .upload-btn, .manage-btn, .add-target-btn, .create-folder-btn {
+        /* 单个加号按钮样式 - 每个section只有一个 */
+        .add-folder-btn {
             margin: 1rem 0;
             padding: 10px 20px;
             background-color: #ff66b3;
@@ -133,50 +133,168 @@
             display: none; /* 仅管理员可见 */
         }
 
-        .upload-btn:hover, .manage-btn:hover, .add-target-btn:hover, .create-folder-btn:hover {
+        .add-folder-btn:hover {
             background-color: #ff3399;
             transform: scale(1.05);
         }
 
-        /* 文件/文件夹管理样式 */
+        /* 文件/文件夹管理样式 - 仿电脑文件夹样式 */
         .media-section {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
             margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fff8fc;
+            border-radius: 15px;
+            border: 1px solid #ffd6e8;
         }
 
+        /* 仿电脑文件夹样式 */
         .folder-item {
-            border: 1px solid #ffd6e8;
-            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 1rem;
-            text-align: center;
+            border-radius: 12px;
+            background-color: #fff;
+            border: 1px solid #ffd6e8;
             cursor: pointer;
-            transition: transform 0.2s;
-            background-color: #fff8fc;
+            transition: all 0.2s ease;
+            position: relative;
+            height: 160px;
+            justify-content: center;
         }
 
         .folder-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(255, 102, 179, 0.1);
+            background-color: #fff0f7;
+            border-color: #ff66b3;
+            box-shadow: 0 4px 12px rgba(255, 102, 179, 0.15);
         }
 
         .folder-icon {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            margin-bottom: 0.5rem;
-            border-radius: 10px;
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 0.8rem;
+            border-radius: 8px;
         }
 
         .folder-name {
-            margin-top: 0.5rem;
-            font-weight: 500;
+            width: 100%;
+            text-align: center;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 14px;
             color: #5a2e48;
+            word-break: break-word;
+            margin-bottom: 0.5rem;
+            max-height: 40px;
+            overflow: hidden;
+        }
+
+        /* 编辑文件夹名称时的样式 - 仿系统 */
+        .folder-name[contenteditable="true"]:focus {
+            outline: 2px solid #ff66b3;
+            background-color: #fff;
+        }
+
+        /* 删除按钮样式 - 显眼且固定位置 */
+        .delete-folder, .delete-file {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff6666;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            opacity: 0.8;
+            display: none; /* 默认隐藏，管理员可见 */
+        }
+
+        .delete-folder:hover, .delete-file:hover {
+            background: #ff3333;
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        /* 文件样式 */
+        .file-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            background-color: #fff;
+            border: 1px solid #ffd6e8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            height: 160px;
+            justify-content: center;
+        }
+
+        .file-item:hover {
+            background-color: #fff0f7;
+            border-color: #ff66b3;
+            box-shadow: 0 4px 12px rgba(255, 102, 179, 0.15);
+        }
+
+        .file-icon {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 0.8rem;
+            border-radius: 8px;
+        }
+
+        .file-name {
+            width: 100%;
+            text-align: center;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #5a2e48;
+            word-break: break-word;
+            max-height: 40px;
+            overflow: hidden;
+        }
+
+        /* 个人目标样式 */
+        .personal-target {
+            position: relative;
+        }
+
+        .add-target-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: none; /* 仅管理员可见 */
+            padding: 10px 20px;
+            background-color: #ff66b3;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .add-target-btn:hover {
+            background-color: #ff3399;
+            transform: scale(1.05);
         }
 
         /* 弹窗样式 - 适配粉色风格 */
-        .login-modal, .folder-style-modal, .target-modal, .folder-modal {
+        .login-modal, .create-folder-modal, .exit-edit-modal, .target-modal, .folder-page-modal {
             display: none;
             position: fixed;
             top: 50%;
@@ -191,6 +309,14 @@
             max-width: 500px;
         }
 
+        /* 文件夹详情页面弹窗（新网页） */
+        .folder-page-modal {
+            max-width: 800px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
         .overlay {
             display: none;
             position: fixed;
@@ -203,7 +329,7 @@
         }
 
         /* 弹窗内控件样式 */
-        .login-modal input, .folder-style-modal input, .target-modal input, .folder-modal input {
+        .login-modal input, .create-folder-modal input, .target-modal input {
             margin: 0.5rem 0;
             padding: 10px 15px;
             width: 100%;
@@ -213,30 +339,7 @@
             color: #5a2e48;
         }
 
-        .style-btn {
-            padding: 10px 15px;
-            margin: 0 0.5rem;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .add-style {
-            background-color: #ff66b3;
-            color: white;
-        }
-
-        .remove-style {
-            background-color: #ff9999;
-            color: white;
-        }
-
-        .style-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .confirmFolderBtn, .saveTargetBtn, .confirmCreateFolderBtn {
+        .confirmBtn, .saveTargetBtn, .confirmCreateFolderBtn, .upload-media-btn {
             background-color: #ff66b3;
             color: white;
             border: none;
@@ -247,7 +350,7 @@
             transition: all 0.3s ease;
         }
 
-        .cancelFolderBtn, .cancelTargetBtn, .cancelCreateFolderBtn {
+        .cancelBtn, .cancelTargetBtn, .cancelCreateFolderBtn, .close-folder-page {
             background-color: #ffb3d9;
             color: white;
             border: none;
@@ -257,66 +360,43 @@
             transition: all 0.3s ease;
         }
 
-        /* 个人目标样式 */
-        .personal-target {
-            position: relative;
+        .confirmBtn:hover, .saveTargetBtn:hover, .confirmCreateFolderBtn:hover, .upload-media-btn:hover {
+            background-color: #ff3399;
+            transform: scale(1.05);
         }
 
-        .add-target-btn {
-            position: absolute;
-            top: 25px;
-            right: 25px;
+        .cancelBtn:hover, .cancelTargetBtn:hover, .cancelCreateFolderBtn:hover, .close-folder-page:hover {
+            background-color: #ff99cc;
+            transform: scale(1.05);
         }
 
-        .target-item {
+        /* 文件夹图标上传区域 */
+        .folder-icon-upload {
+            margin: 1rem 0;
+            padding: 1rem;
+            border: 2px dashed #ffb3d9;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .folder-icon-upload:hover {
+            border-color: #ff66b3;
+            background-color: #fff0f7;
+        }
+
+        .icon-preview {
+            width: 80px;
+            height: 80px;
+            margin: 1rem auto;
+            border-radius: 10px;
+            object-fit: contain;
+            background-color: #fff8fc;
             display: flex;
             align-items: center;
-            padding: 0.8rem;
-            border: 1px solid #ffd6e8;
-            border-radius: 15px;
-            margin: 0.5rem 0;
-            background-color: #fff8fc;
-        }
-
-        .target-checkbox {
-            width: 20px;
-            height: 20px;
-            margin-right: 1rem;
-            cursor: pointer;
-            accent-color: #ff66b3;
-        }
-
-        .target-content {
-            flex: 1;
-        }
-
-        .target-edit {
+            justify-content: center;
             color: #ff66b3;
-            cursor: pointer;
-            margin-left: 1rem;
-            display: none; /* 仅管理员可见 */
-        }
-
-        .completed {
-            text-decoration: line-through;
-            color: #b3889e;
-        }
-
-        /* 删除按钮样式 */
-        .delete-folder, .delete-file {
-            margin-top: 0.5rem;
-            background: #ff9999;
-            color: white;
-            border: none;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            display: none; /* 仅管理员可见 */
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .delete-folder:hover, .delete-file:hover {
-            background: #ff6666;
+            font-size: 30px;
         }
 
         /* 响应式适配 */
@@ -329,7 +409,7 @@
                 padding: 20px;
             }
             .media-section {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             }
             .home-container {
                 flex-direction: column;
@@ -340,7 +420,6 @@
             }
         }
 
-        
         /* 首页样式 */
         .home-page {
             display: flex;
@@ -384,89 +463,6 @@
             border: 5px solid #ff99cc;
             box-shadow: 0 5px 15px rgba(255, 102, 179, 0.3);
         }
-
-        /* 新增：文件夹样式库样式（表情包式常驻展示） */
-        .folder-style-library {
-            margin: 1rem 0;
-            padding: 1rem;
-            border: 1px solid #ffd6e8;
-            border-radius: 15px;
-            background-color: #fff8fc;
-        }
-
-        .folder-style-library h4 {
-            color: #ff66b3;
-            margin-bottom: 0.8rem;
-            text-align: center;
-        }
-
-        .style-preview {
-            display: flex;
-            gap: 1rem;
-            margin: 1rem 0;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .style-option {
-            position: relative;
-        }
-
-        .style-option.selected::after {
-            content: "✓";
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background-color: #ff66b3;
-            color: white;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-
-        /* 文件夹内容样式（收纳文件） */
-        .folder-content {
-            display: none;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px dashed #ffb3d9;
-        }
-
-        .folder-opened .folder-content {
-            display: block;
-        }
-
-        .file-item {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem;
-            border: 1px solid #ffd6e8;
-            border-radius: 10px;
-            margin: 0.5rem 0;
-            background-color: #fff;
-        }
-
-        .file-icon {
-            width: 30px;
-            height: 30px;
-            margin-right: 0.5rem;
-            border-radius: 5px;
-        }
-
-        .file-name {
-            flex: 1;
-            font-size: 14px;
-        }
-
-        /* 文件拖放样式 */
-        .folder-item.drop-over {
-            border: 2px dashed #ff66b3;
-            background-color: #fff0f7;
-        }
     </style>
 </head>
 <body>
@@ -497,12 +493,24 @@
         <p id="loginError" style="color: #ff6666; margin-top: 0.5rem; display: none; text-align: center;">Wrong password!</p>
     </div>
 
+    <!-- 退出编辑模式弹窗 -->
+    <div class="overlay" id="exitEditOverlay"></div>
+    <div class="exit-edit-modal" id="exitEditModal">
+        <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Exit Edit Mode?</h3>
+        <p style="text-align: center; margin-bottom: 1rem; color: #5a2e48;">Are you sure you want to end edit mode?</p>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <button id="confirmExitEdit" class="confirmBtn">Yes</button>
+            <button id="cancelExitEdit" class="cancelBtn">No</button>
+        </div>
+    </div>
+
     <!-- 主内容区域 -->
     <div class="main-content" id="main-content">
         <!-- 首页 -->
         <div id="home" class="page-content">
             <div class="home-page">
-                <img src="https://drive.google.com/file/d/1a3gYa29jVTpp2k3NYMyCn4Zc4tw8ixvW/view?usp=drive_link" alt="Cute Cartoon" class="cartoon-img">
+                <!-- 关键修改处：替换src为你提供的图片链接 -->
+                <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/eff44eee1e6e4f2792c1775615dc2c74.JPG~tplv-a9rns2rl98-24:720:720.image?lk3s=8e244e95&rcl=202602080916150F3B363E9BA71B184F7A&rrcfp=8a172a1a&x-expires=1771118176&x-signature=rbjW80X3iJyV3cv9f5kR3omsSlc%3D" alt="Yomi's Profile" class="cartoon-img">
                 <div class="profile-card">
                     <h1>About Me 💖</h1>
                     <div class="profile-info">
@@ -519,46 +527,42 @@
             </div>
         </div>
         
-        <!-- Study Diary 区域 -->
+        <!-- Study Diary 区域 - 单个加号按钮 -->
         <div id="study" class="page-content" style="display: none;">
             <h2 class="page-title">📚 Study Diary</h2>
             <section class="content-section">
                 <h3 class="section-title">My Study Records</h3>
-                <button class="upload-btn" id="studyUploadBtn">+ Upload File/Video</button>
-                <button class="create-folder-btn" id="studyCreateFolderBtn">+ Create New Folder</button>
+                <button class="add-folder-btn" id="studyAddFolderBtn">+ Create New Folder</button>
                 <div class="media-section" id="studyMedia"></div>
             </section>
         </div>
 
-        <!-- Daily Vlog 区域 -->
+        <!-- Daily Vlog 区域 - 单个加号按钮 -->
         <div id="vlog" class="page-content" style="display: none;">
             <h2 class="page-title">🎥 Daily Vlog</h2>
             <section class="content-section">
                 <h3 class="section-title">My Daily Life</h3>
-                <button class="upload-btn" id="vlogUploadBtn">+ Upload File/Video</button>
-                <button class="create-folder-btn" id="vlogCreateFolderBtn">+ Create New Folder</button>
+                <button class="add-folder-btn" id="vlogAddFolderBtn">+ Create New Folder</button>
                 <div class="media-section" id="vlogMedia"></div>
             </section>
         </div>
 
-        <!-- Week Diary 区域 -->
+        <!-- Week Diary 区域 - 单个加号按钮 -->
         <div id="week" class="page-content" style="display: none;">
             <h2 class="page-title">📖 Week Diary</h2>
             <section class="content-section">
                 <h3 class="section-title">Weekly Reflections</h3>
-                <button class="upload-btn" id="weekUploadBtn">+ Upload File/Video</button>
-                <button class="create-folder-btn" id="weekCreateFolderBtn">+ Create New Folder</button>
+                <button class="add-folder-btn" id="weekAddFolderBtn">+ Create New Folder</button>
                 <div class="media-section" id="weekMedia"></div>
             </section>
         </div>
 
-        <!-- Achievements Showcase 区域 -->
+        <!-- Achievements Showcase 区域 - 单个加号按钮 -->
         <div id="achieve" class="page-content" style="display: none;">
             <h2 class="page-title">🏆 Achievements Showcase</h2>
             <section class="content-section">
                 <h3 class="section-title">My Accomplishments</h3>
-                <button class="upload-btn" id="achieveUploadBtn">+ Upload File/Video</button>
-                <button class="create-folder-btn" id="achieveCreateFolderBtn">+ Create New Folder</button>
+                <button class="add-folder-btn" id="achieveAddFolderBtn">+ Create New Folder</button>
                 <div class="media-section" id="achieveMedia"></div>
             </section>
         </div>
@@ -574,36 +578,33 @@
         </div>
     </div>
 
-    <!-- 文件夹样式库弹窗（表情包式常驻展示） -->
-    <div class="overlay" id="folderStyleOverlay"></div>
-    <div class="folder-style-modal" id="folderStyleModal">
-        <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Folder Style Library</h3>
-        <div class="style-controls" style="display: flex; justify-content: center; margin: 1rem 0;">
-            <button class="style-btn add-style" id="addStyleBtn">+ Add Folder Style</button>
-            <button class="style-btn remove-style" id="removeStyleBtn">- Remove Selected</button>
-        </div>
-        <div class="style-preview" id="stylePreview"></div>
-        <input type="file" id="styleImageUpload" accept="image/*" style="display: none;">
-        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 1rem;">
-            <button id="cancelFolderBtn" class="cancelFolderBtn">Close</button>
-        </div>
-    </div>
-
-    <!-- 创建文件夹弹窗（包含常驻图案库） -->
+    <!-- 创建文件夹弹窗 - 支持上传自定义icon -->
     <div class="overlay" id="createFolderOverlay"></div>
-    <div class="folder-modal" id="createFolderModal">
+    <div class="create-folder-modal" id="createFolderModal">
         <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;">Create New Folder</h3>
-        <input type="text" id="newFolderNameInput" placeholder="Enter folder name">
+        <input type="text" id="newFolderNameInput" placeholder="Enter folder name (e.g. Math Homework)">
         
-        <!-- 常驻的文件夹图案库（像微信表情包一样展示） -->
-        <div class="folder-style-library">
-            <h4>📁 Select Folder Icon</h4>
-            <div class="style-preview" id="createFolderStylePreview"></div>
+        <!-- 文件夹图标上传区域 -->
+        <div class="folder-icon-upload" id="folderIconUpload">
+            <p style="color: #ff66b3;">📁 Click to upload folder icon</p>
+            <div class="icon-preview" id="folderIconPreview">📁</div>
+            <input type="file" id="folderIconFileInput" accept="image/*" style="display: none;">
         </div>
         
         <div style="display: flex; justify-content: center; gap: 10px; margin-top: 1rem;">
             <button id="confirmCreateFolderBtn" class="confirmCreateFolderBtn">Create</button>
             <button id="cancelCreateFolderBtn" class="cancelCreateFolderBtn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- 文件夹详情页面弹窗（新网页） -->
+    <div class="overlay" id="folderPageOverlay"></div>
+    <div class="folder-page-modal" id="folderPageModal">
+        <h3 style="color: #ff66b3; text-align: center; margin-bottom: 1rem;" id="folderPageTitle">Folder Content</h3>
+        <button class="upload-media-btn" id="uploadMediaBtn">+ Upload Photo/Video</button>
+        <div class="media-section" id="folderMediaContent"></div>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 1rem;">
+            <button id="closeFolderPageBtn" class="close-folder-page">Close</button>
         </div>
     </div>
 
@@ -627,19 +628,12 @@
         const ADMIN_PASSWORD = "Shining0325";
         let isAdmin = false;
         let currentMediaSection = "";
-        // 文件夹样式库 - 常驻的表情包式图案库
-        let folderStyles = [
-            { id: 1, src: "https://via.placeholder.com/60/ff66b3/ffffff?text=📚" },
-            { id: 2, src: "https://via.placeholder.com/60/ff99cc/ffffff?text=🎥" },
-            { id: 3, src: "https://via.placeholder.com/60/ffb3d9/ffffff?text=📖" },
-            { id: 4, src: "https://via.placeholder.com/60/ffd6e8/ffffff?text=🏆" },
-            { id: 5, src: "https://via.placeholder.com/60/fff0f7/ffffff?text=🎯" }
-        ];
-        let selectedStyleId = 1; // 默认选中第一个样式
+        let currentFolderId = ""; // 当前打开的文件夹ID
+        let folderIcons = {}; // 存储文件夹图标
+        let folderNames = {}; // 存储文件夹名称
+        let folderContents = {}; // 存储文件夹内的媒体文件
         let targets = [];
         let targetIdCounter = 1;
-        // 存储文件夹和文件的关系
-        let folderFiles = {};
 
         // 页面导航功能
         function navigateTo(pageId) {
@@ -660,27 +654,33 @@
         const submitLogin = document.getElementById("submitLogin");
         const loginError = document.getElementById("loginError");
         
-        // 管理员按钮
-        const uploadBtns = document.querySelectorAll(".upload-btn");
-        const createFolderBtns = document.querySelectorAll(".create-folder-btn");
-        const addTargetBtn = document.getElementById("addTargetBtn");
+        // 退出编辑模式相关
+        const exitEditModal = document.getElementById("exitEditModal");
+        const exitEditOverlay = document.getElementById("exitEditOverlay");
+        const confirmExitEdit = document.getElementById("confirmExitEdit");
+        const cancelExitEdit = document.getElementById("cancelExitEdit");
 
-        // 文件夹样式库相关
-        const folderStyleModal = document.getElementById("folderStyleModal");
-        const folderStyleOverlay = document.getElementById("folderStyleOverlay");
-        const addStyleBtn = document.getElementById("addStyleBtn");
-        const removeStyleBtn = document.getElementById("removeStyleBtn");
-        const stylePreview = document.getElementById("stylePreview");
-        const styleImageUpload = document.getElementById("styleImageUpload");
-        const cancelFolderBtn = document.getElementById("cancelFolderBtn");
+        // 管理员按钮（单个加号按钮）
+        const addFolderBtns = document.querySelectorAll(".add-folder-btn");
+        const addTargetBtn = document.getElementById("addTargetBtn");
 
         // 创建文件夹相关
         const createFolderModal = document.getElementById("createFolderModal");
         const createFolderOverlay = document.getElementById("createFolderOverlay");
         const newFolderNameInput = document.getElementById("newFolderNameInput");
-        const createFolderStylePreview = document.getElementById("createFolderStylePreview");
+        const folderIconUpload = document.getElementById("folderIconUpload");
+        const folderIconFileInput = document.getElementById("folderIconFileInput");
+        const folderIconPreview = document.getElementById("folderIconPreview");
         const confirmCreateFolderBtn = document.getElementById("confirmCreateFolderBtn");
         const cancelCreateFolderBtn = document.getElementById("cancelCreateFolderBtn");
+
+        // 文件夹详情页面相关
+        const folderPageModal = document.getElementById("folderPageModal");
+        const folderPageOverlay = document.getElementById("folderPageOverlay");
+        const folderPageTitle = document.getElementById("folderPageTitle");
+        const folderMediaContent = document.getElementById("folderMediaContent");
+        const uploadMediaBtn = document.getElementById("uploadMediaBtn");
+        const closeFolderPageBtn = document.getElementById("closeFolderPageBtn");
 
         // 目标相关
         const targetModal = document.getElementById("targetModal");
@@ -692,11 +692,52 @@
         const cancelTargetBtn = document.getElementById("cancelTargetBtn");
         const targetList = document.getElementById("targetList");
 
-        // 登录功能
+        // 登录/退出编辑功能
         loginBtn.addEventListener("click", () => {
-            loginModal.style.display = "block";
-            loginOverlay.style.display = "block";
-            passwordInput.focus();
+            if (!isAdmin) {
+                // 未登录 - 显示登录弹窗
+                loginModal.style.display = "block";
+                loginOverlay.style.display = "block";
+                passwordInput.focus();
+            } else {
+                // 已登录 - 显示退出编辑确认弹窗
+                exitEditModal.style.display = "block";
+                exitEditOverlay.style.display = "block";
+            }
+        });
+
+        // 确认退出编辑模式
+        confirmExitEdit.addEventListener("click", () => {
+            isAdmin = false;
+            exitEditModal.style.display = "none";
+            exitEditOverlay.style.display = "none";
+            
+            // 隐藏所有管理员按钮
+            addFolderBtns.forEach(btn => btn.style.display = "none");
+            addTargetBtn.style.display = "none";
+            
+            // 隐藏所有删除按钮
+            document.querySelectorAll('.delete-folder, .delete-file, .target-edit').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // 禁用所有编辑功能
+            document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                el.contentEditable = false;
+            });
+            
+            alert("✨ Edit mode ended! You can no longer modify content.");
+        });
+
+        // 取消退出编辑模式
+        cancelExitEdit.addEventListener("click", () => {
+            exitEditModal.style.display = "none";
+            exitEditOverlay.style.display = "none";
+        });
+
+        exitEditOverlay.addEventListener("click", () => {
+            exitEditModal.style.display = "none";
+            exitEditOverlay.style.display = "none";
         });
 
         loginOverlay.addEventListener("click", () => {
@@ -711,107 +752,54 @@
                 loginModal.style.display = "none";
                 loginOverlay.style.display = "none";
                 // 显示所有管理员按钮
-                uploadBtns.forEach(btn => btn.style.display = "inline-block");
-                createFolderBtns.forEach(btn => btn.style.display = "inline-block");
+                addFolderBtns.forEach(btn => btn.style.display = "inline-block");
                 addTargetBtn.style.display = "inline-block";
-                alert("✨ Edit mode begin! You can now upload files and manage content.");
+                // 显示所有已存在的删除按钮
+                document.querySelectorAll('.delete-folder, .delete-file, .target-edit').forEach(el => {
+                    el.style.display = el.classList.contains('delete-folder') || el.classList.contains('delete-file') ? 'flex' : 'inline';
+                });
+                // 启用编辑功能
+                document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                    el.contentEditable = true;
+                });
+                alert("✨ Edit mode begin! You can now create folders and manage content.");
             } else {
                 loginError.style.display = "block";
                 passwordInput.value = "";
             }
         });
 
-        // 渲染文件夹样式库（表情包式展示）
-        function renderFolderStyles(previewContainer, selectedId = selectedStyleId) {
-            if (!previewContainer) return;
-            
-            previewContainer.innerHTML = "";
-            folderStyles.forEach(style => {
-                const styleItem = document.createElement("div");
-                styleItem.className = `style-option ${selectedId === style.id ? "selected" : ""}`;
-                styleItem.dataset.id = style.id;
-                styleItem.style.width = "60px";
-                styleItem.style.height = "60px";
-                styleItem.style.border = selectedId === style.id ? "2px solid #ff66b3" : "2px solid transparent";
-                styleItem.style.borderRadius = "10px";
-                styleItem.style.cursor = "pointer";
-                styleItem.innerHTML = `<img src="${style.src}" width="60" height="60" alt="Folder Style" style="border-radius: 8px;">`;
-                styleItem.addEventListener("click", () => {
-                    if (previewContainer === createFolderStylePreview) {
-                        selectedStyleId = style.id;
-                        renderFolderStyles(createFolderStylePreview, style.id);
-                    } else {
-                        selectedStyleId = style.id;
-                        renderFolderStyles(stylePreview, style.id);
-                    }
-                });
-                previewContainer.appendChild(styleItem);
-            });
-        }
-
-        // 添加新的文件夹样式到样式库
-        addStyleBtn.addEventListener("click", () => {
-            styleImageUpload.click();
+        // 文件夹图标上传
+        folderIconUpload.addEventListener("click", () => {
+            folderIconFileInput.click();
         });
 
-        styleImageUpload.addEventListener("change", (e) => {
+        folderIconFileInput.addEventListener("change", (e) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    const newStyleId = folderStyles.length > 0 ? Math.max(...folderStyles.map(s => s.id)) + 1 : 1;
-                    folderStyles.push({
-                        id: newStyleId,
-                        src: event.target.result
-                    });
-                    renderFolderStyles(stylePreview);
-                    renderFolderStyles(createFolderStylePreview);
+                    folderIconPreview.innerHTML = `<img src="${event.target.result}" width="80" height="80" style="object-fit: contain; border-radius: 10px;">`;
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // 从样式库删除选中的样式
-        removeStyleBtn.addEventListener("click", () => {
-            if (selectedStyleId && folderStyles.length > 1) {
-                folderStyles = folderStyles.filter(style => style.id !== selectedStyleId);
-                selectedStyleId = folderStyles[0]?.id || null;
-                renderFolderStyles(stylePreview);
-                renderFolderStyles(createFolderStylePreview);
-            } else if (folderStyles.length <= 1) {
-                alert("Cannot remove the last style!");
-            } else {
-                alert("Please select a style to remove!");
-            }
-        });
-
-        // 打开文件夹样式库弹窗
-        function openFolderStyleModal() {
-            folderStyleModal.style.display = "block";
-            folderStyleOverlay.style.display = "block";
-            renderFolderStyles(stylePreview);
-        }
-
         // 打开创建文件夹弹窗
         function openCreateFolderModal(section) {
+            if (!isAdmin) return;
+            
             currentMediaSection = section;
             createFolderModal.style.display = "block";
             createFolderOverlay.style.display = "block";
             newFolderNameInput.value = "";
-            selectedStyleId = folderStyles[0]?.id || 1;
-            renderFolderStyles(createFolderStylePreview);
+            folderIconPreview.innerHTML = "📁"; // 重置预览
+            folderIconFileInput.value = ""; // 重置文件输入
+            // 自动聚焦到输入框
+            setTimeout(() => {
+                newFolderNameInput.focus();
+            }, 100);
         }
-
-        // 关闭文件夹样式库弹窗
-        cancelFolderBtn.addEventListener("click", () => {
-            folderStyleModal.style.display = "none";
-            folderStyleOverlay.style.display = "none";
-        });
-
-        folderStyleOverlay.addEventListener("click", () => {
-            folderStyleModal.style.display = "none";
-            folderStyleOverlay.style.display = "none";
-        });
 
         // 关闭创建文件夹弹窗
         cancelCreateFolderBtn.addEventListener("click", () => {
@@ -824,150 +812,257 @@
             createFolderOverlay.style.display = "none";
         });
 
-        // 创建文件夹（带选中的图案）
+        // 创建文件夹
         confirmCreateFolderBtn.addEventListener("click", () => {
-            if (!newFolderNameInput.value.trim()) {
-                alert("Please enter folder name!");
-                return;
-            }
-
-            const selectedStyle = folderStyles.find(style => style.id === selectedStyleId);
-            if (!selectedStyle) {
-                alert("Please select a folder style!");
+            const folderName = newFolderNameInput.value.trim();
+            if (!folderName) {
+                alert("Please enter a folder name!");
+                newFolderNameInput.focus();
                 return;
             }
 
             const mediaSection = document.getElementById(`${currentMediaSection}Media`);
             const folderId = `folder_${Date.now()}`;
             
+            // 保存文件夹名称
+            folderNames[folderId] = folderName;
+            
+            // 保存文件夹图标
+            const iconPreviewContent = folderIconPreview.innerHTML;
+            if (iconPreviewContent.includes('img src=')) {
+                const imgSrc = iconPreviewContent.match(/src="(.*?)"/)[1];
+                folderIcons[folderId] = imgSrc;
+            } else {
+                // 默认图标
+                folderIcons[folderId] = "https://via.placeholder.com/70/ff66b3/ffffff?text=📁";
+            }
+            
+            // 初始化文件夹内容
+            folderContents[folderId] = [];
+
             // 创建文件夹元素
             const folderItem = document.createElement("div");
             folderItem.className = "folder-item";
             folderItem.dataset.id = folderId;
+            
+            // 文件夹HTML结构
             folderItem.innerHTML = `
-                <img src="${selectedStyle.src}" class="folder-icon" alt="Folder Icon">
-                <div class="folder-name" contenteditable="true">${newFolderNameInput.value}</div>
-                <button class="delete-folder" style="display: ${isAdmin ? "block" : "none"}">Delete</button>
-                <!-- 文件夹内容区域（收纳文件） -->
-                <div class="folder-content" id="folder_${folderId}_content"></div>
+                <button class="delete-folder" style="display: ${isAdmin ? "flex" : "none"}">×</button>
+                <img src="${folderIcons[folderId]}" class="folder-icon" alt="${folderName}">
+                <div class="folder-name" contenteditable="${isAdmin}">${folderName}</div>
             `;
 
-            // 文件夹点击展开/收起
-            folderItem.addEventListener("click", (e) => {
-                // 排除删除按钮和编辑名称的点击
-                if (!e.target.classList.contains('delete-folder') && e.target.tagName !== 'DIV') {
-                    folderItem.classList.toggle('folder-opened');
+            // 文件夹名称编辑
+            const folderNameEl = folderItem.querySelector('.folder-name');
+            folderNameEl.addEventListener("keydown", (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    folderNameEl.blur(); // 失去焦点完成编辑
                 }
             });
 
-            // 删除文件夹
-            folderItem.querySelector(".delete-folder").addEventListener("click", (e) => {
-                e.stopPropagation();
-                if (confirm("Are you sure to delete this folder?")) {
+            folderNameEl.addEventListener("blur", () => {
+                const newName = folderNameEl.textContent.trim() || "New Folder";
+                folderNameEl.textContent = newName;
+                folderNames[folderId] = newName; // 更新名称
+            });
+
+            // 删除文件夹功能（删除键1）
+            const deleteBtn = folderItem.querySelector(".delete-folder");
+            deleteBtn.addEventListener("click", (e) => {
+                e.stopPropagation(); // 防止触发文件夹打开
+                if (confirm(`Are you sure to delete the folder "${folderNameEl.textContent}"?\nAll contents inside will also be deleted.`)) {
+                    // 清理文件URL
+                    if (folderContents[folderId]) {
+                        folderContents[folderId].forEach(file => {
+                            if (file.url && file.url.startsWith('blob:')) {
+                                URL.revokeObjectURL(file.url);
+                            }
+                        });
+                    }
+                    // 删除文件夹
                     mediaSection.removeChild(folderItem);
-                    delete folderFiles[folderId];
+                    delete folderIcons[folderId];
+                    delete folderNames[folderId];
+                    delete folderContents[folderId];
                 }
             });
 
-            // 拖放文件到文件夹功能
-            folderItem.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                folderItem.classList.add('drop-over');
-            });
-
-            folderItem.addEventListener("dragleave", () => {
-                folderItem.classList.remove('drop-over');
-            });
-
-            folderItem.addEventListener("drop", (e) => {
-                e.preventDefault();
-                folderItem.classList.remove('drop-over');
-                const fileId = e.dataTransfer.getData("text/plain");
-                const fileItem = document.getElementById(fileId);
-                if (fileItem) {
-                    // 把文件移动到文件夹内
-                    folderItem.querySelector(".folder-content").appendChild(fileItem);
-                    // 记录文件所属文件夹
-                    folderFiles[fileId] = folderId;
+            // 点击文件夹打开新网页（弹窗形式）
+            folderItem.addEventListener("click", (e) => {
+                // 忽略删除按钮和名称编辑区域的点击
+                if (e.target.classList.contains('delete-folder') || 
+                    e.target.classList.contains('folder-name')) {
+                    return;
                 }
+                
+                openFolderPage(folderId);
             });
 
+            // 添加到媒体区域
             mediaSection.appendChild(folderItem);
+            
+            // 创建后自动进入重命名模式
+            setTimeout(() => {
+                folderNameEl.focus();
+                // 选中所有文本以便直接输入
+                const range = document.createRange();
+                const sel = window.getSelection();
+                range.selectNodeContents(folderNameEl);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }, 200);
+
+            // 关闭弹窗
             createFolderModal.style.display = "none";
             createFolderOverlay.style.display = "none";
         });
 
-        // 绑定创建文件夹按钮
-        document.getElementById("studyCreateFolderBtn").addEventListener("click", () => openCreateFolderModal("study"));
-        document.getElementById("vlogCreateFolderBtn").addEventListener("click", () => openCreateFolderModal("vlog"));
-        document.getElementById("weekCreateFolderBtn").addEventListener("click", () => openCreateFolderModal("week"));
-        document.getElementById("achieveCreateFolderBtn").addEventListener("click", () => openCreateFolderModal("achieve"));
+        // 打开文件夹详情页面（新网页）
+        function openFolderPage(folderId) {
+            currentFolderId = folderId;
+            folderPageTitle.textContent = folderNames[folderId] || "Folder Content";
+            folderPageModal.style.display = "block";
+            folderPageOverlay.style.display = "block";
+            
+            // 渲染文件夹内的媒体文件
+            renderFolderMedia(folderId);
+        }
 
-        // 上传文件功能（支持拖放到文件夹）
-        function handleFileUpload(btnId, sectionId) {
-            const btn = document.getElementById(btnId);
-            const fileInput = document.createElement("input");
-            fileInput.type = "file";
-            fileInput.accept = "*";
-            fileInput.multiple = true;
+        // 关闭文件夹详情页面
+        closeFolderPageBtn.addEventListener("click", () => {
+            folderPageModal.style.display = "none";
+            folderPageOverlay.style.display = "none";
+            currentFolderId = "";
+        });
 
-            btn.addEventListener("click", () => {
-                fileInput.click();
-            });
+        folderPageOverlay.addEventListener("click", () => {
+            folderPageModal.style.display = "none";
+            folderPageOverlay.style.display = "none";
+            currentFolderId = "";
+        });
 
-            fileInput.addEventListener("change", (e) => {
-                const files = e.target.files;
-                const mediaSection = document.getElementById(sectionId);
+        // 渲染文件夹内的媒体文件
+        function renderFolderMedia(folderId) {
+            folderMediaContent.innerHTML = "";
+            
+            if (!folderContents[folderId]) return;
+            
+            folderContents[folderId].forEach((file, index) => {
+                const fileItem = document.createElement("div");
+                fileItem.className = "file-item";
+                fileItem.dataset.index = index;
                 
-                for (let file of files) {
-                    const fileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                    const fileItem = document.createElement("div");
-                    fileItem.className = "file-item";
-                    fileItem.id = fileId;
-                    fileItem.draggable = true; // 允许拖拽
-                    const fileUrl = URL.createObjectURL(file);
-                    
-                    // 判断文件类型
-                    let filePreview = "";
-                    if (file.type.startsWith("image/")) {
-                        filePreview = `<img src="${fileUrl}" class="file-icon" alt="${file.name}">`;
-                    } else if (file.type.startsWith("video/")) {
-                        filePreview = `<video src="${fileUrl}" class="file-icon" controls></video>`;
-                    } else {
-                        filePreview = `<div class="file-icon" style="background: #ffd6e8; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #ff66b3;">File</div>`;
+                // 创建文件预览
+                let filePreview = "";
+                if (file.type.startsWith("image/")) {
+                    filePreview = `<img src="${file.url}" class="file-icon" alt="${file.name}">`;
+                } else if (file.type.startsWith("video/")) {
+                    filePreview = `<video src="${file.url}" class="file-icon" controls muted playsinline></video>`;
+                } else {
+                    filePreview = `<div class="file-icon" style="background: #ffd6e8; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ff66b3;">📄</div>`;
+                }
+
+                // 文件HTML结构
+                fileItem.innerHTML = `
+                    <button class="delete-file" style="display: ${isAdmin ? "flex" : "none"}">×</button>
+                    ${filePreview}
+                    <div class="file-name" contenteditable="${isAdmin}">${file.name}</div>
+                `;
+
+                // 文件名称编辑
+                const fileNameEl = fileItem.querySelector('.file-name');
+                fileNameEl.addEventListener("keydown", (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        fileNameEl.blur(); // 失去焦点完成编辑
                     }
+                });
 
-                    fileItem.innerHTML = `
-                        ${filePreview}
-                        <div class="file-name" contenteditable="true">${file.name}</div>
-                        <button class="delete-file" style="display: ${isAdmin ? "block" : "none"}">Delete</button>
-                    `;
+                fileNameEl.addEventListener("blur", () => {
+                    const newName = fileNameEl.textContent.trim() || file.originalName;
+                    fileNameEl.textContent = newName;
+                    // 更新文件名
+                    folderContents[folderId][index].name = newName;
+                });
 
-                    // 文件拖拽事件
-                    fileItem.addEventListener("dragstart", (e) => {
-                        e.dataTransfer.setData("text/plain", fileId);
-                    });
-
-                    // 删除文件
-                    fileItem.querySelector(".delete-file").addEventListener("click", () => {
-                        if (confirm("Are you sure to delete this file?")) {
-                            fileItem.remove();
-                            URL.revokeObjectURL(fileUrl);
-                            delete folderFiles[fileId];
+                // 文件删除功能（删除键1）
+                const deleteFileBtn = fileItem.querySelector(".delete-file");
+                deleteFileBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Are you sure to delete "${fileNameEl.textContent}"?`)) {
+                        // 释放文件URL
+                        if (file.url && file.url.startsWith('blob:')) {
+                            URL.revokeObjectURL(file.url);
                         }
-                    });
+                        // 删除文件
+                        folderContents[folderId].splice(index, 1);
+                        renderFolderMedia(folderId); // 重新渲染
+                    }
+                });
 
-                    // 默认添加到媒体区域根目录
-                    mediaSection.appendChild(fileItem);
+                // 添加到文件夹内容区域
+                folderMediaContent.appendChild(fileItem);
+                
+                // 自动进入重命名模式（仅新上传的文件）
+                if (file.isNew) {
+                    setTimeout(() => {
+                        fileNameEl.focus();
+                        const range = document.createRange();
+                        const sel = window.getSelection();
+                        range.selectNodeContents(fileNameEl);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        file.isNew = false; // 重置标记
+                    }, 200);
                 }
             });
         }
 
-        // 绑定上传按钮
-        handleFileUpload("studyUploadBtn", "studyMedia");
-        handleFileUpload("vlogUploadBtn", "vlogMedia");
-        handleFileUpload("weekUploadBtn", "weekMedia");
-        handleFileUpload("achieveUploadBtn", "achieveMedia");
+        // 文件夹内上传媒体文件
+        uploadMediaBtn.addEventListener("click", () => {
+            if (!isAdmin) return;
+            
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/*,video/*";
+            fileInput.multiple = true;
+
+            fileInput.click();
+
+            fileInput.addEventListener("change", (e) => {
+                const files = e.target.files;
+                if (!files.length || !currentFolderId) return;
+
+                // 初始化文件夹内容数组
+                if (!folderContents[currentFolderId]) {
+                    folderContents[currentFolderId] = [];
+                }
+
+                // 批量上传文件
+                for (let file of files) {
+                    const fileUrl = URL.createObjectURL(file);
+                    
+                    // 添加文件到文件夹
+                    folderContents[currentFolderId].push({
+                        name: file.name,
+                        originalName: file.name,
+                        type: file.type,
+                        url: fileUrl,
+                        isNew: true // 标记为新文件，用于自动重命名
+                    });
+                }
+
+                // 重新渲染文件夹内容
+                renderFolderMedia(currentFolderId);
+            });
+        });
+
+        // 绑定创建文件夹按钮（每个section一个加号按钮）
+        document.getElementById("studyAddFolderBtn").addEventListener("click", () => openCreateFolderModal("study"));
+        document.getElementById("vlogAddFolderBtn").addEventListener("click", () => openCreateFolderModal("vlog"));
+        document.getElementById("weekAddFolderBtn").addEventListener("click", () => openCreateFolderModal("week"));
+        document.getElementById("achieveAddFolderBtn").addEventListener("click", () => openCreateFolderModal("achieve"));
 
         // 个人目标功能
         function renderTargets() {
@@ -1017,6 +1112,7 @@
             targetContent.value = "";
             targetModal.style.display = "block";
             targetOverlay.style.display = "block";
+            targetYear.focus();
         });
 
         // 关闭目标弹窗
@@ -1032,8 +1128,13 @@
 
         // 保存目标
         saveTargetBtn.addEventListener("click", () => {
-            if (!targetYear.value || !targetContent.value) {
-                alert("Please enter year and target content!");
+            const year = targetYear.value.trim();
+            const content = targetContent.value.trim();
+            
+            if (!year || !content) {
+                alert("Please fill in both year and target content!");
+                if (!year) targetYear.focus();
+                else targetContent.focus();
                 return;
             }
 
@@ -1042,15 +1143,15 @@
                 const id = parseInt(targetId.value);
                 const target = targets.find(t => t.id === id);
                 if (target) {
-                    target.year = targetYear.value;
-                    target.content = targetContent.value;
+                    target.year = year;
+                    target.content = content;
                 }
             } else {
                 // 添加新目标
                 targets.push({
                     id: targetIdCounter++,
-                    year: targetYear.value,
-                    content: targetContent.value,
+                    year: year,
+                    content: content,
                     completed: false
                 });
             }
@@ -1061,14 +1162,25 @@
         });
 
         // 初始化
-        renderFolderStyles(stylePreview);
-        renderFolderStyles(createFolderStylePreview);
-        renderTargets();
-        
-        // 页面加载时默认显示首页
-        window.onload = function() {
+        function init() {
+            renderTargets();
+            // 默认显示首页
             navigateTo('home');
-        };
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener("load", init);
+
+        // 点击空白处完成编辑
+        document.addEventListener("click", (e) => {
+            // 如果点击的是空白区域，并且有元素处于编辑状态
+            const activeElement = document.activeElement;
+            if (activeElement && activeElement.isContentEditable && 
+                !activeElement.contains(e.target) && 
+                !['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) {
+                activeElement.blur();
+            }
+        });
 
         // 确保管理员登录取消后隐藏按钮
         window.addEventListener("beforeunload", () => {
