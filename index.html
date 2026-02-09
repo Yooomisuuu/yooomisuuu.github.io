@@ -377,14 +377,7 @@
         // 核心变量
         const PWD = "Shining0325!";
         let isAdmin = false, currMedia = "", currFolder = "", editTargetId = null, stickerEdit = false;
-        // 修改1: 重构文件夹数据结构，为每个板块创建独立存储
-        let folderData = {
-            study: { icons: {}, names: {}, contents: {} },
-            vlog: { icons: {}, names: {}, contents: {} },
-            week: { icons: {}, names: {}, contents: {} },
-            achieve: { icons: {}, names: {}, contents: {} }
-        };
-        let targets = [];
+        let folderIcons = {}, folderNames = {}, folderContents = {}, targets = [];
         let idCounter = 1;
         let currentDeleteSticker = null;
         let selectedSticker = null;
@@ -407,8 +400,7 @@
         // ====================== 本地存储核心 ======================
         function saveAllData() {
             const data = {
-                folderData, // 修改2: 保存重构后的文件夹数据
-                targets, pageStickers, idCounter,
+                folderIcons, folderNames, folderContents, targets, pageStickers, idCounter,
                 profile: {
                     src: el("profileImage").src,
                     html: el("profileInfo").innerHTML,
@@ -424,13 +416,9 @@
             if (!saved) return;
             const data = JSON.parse(saved);
             
-            // 修改3: 加载重构后的文件夹数据
-            folderData = data.folderData || {
-                study: { icons: {}, names: {}, contents: {} },
-                vlog: { icons: {}, names: {}, contents: {} },
-                week: { icons: {}, names: {}, contents: {} },
-                achieve: { icons: {}, names: {}, contents: {} }
-            };
+            folderIcons = data.folderIcons || {};
+            folderNames = data.folderNames || {};
+            folderContents = data.folderContents || {};
             targets = data.targets || [];
             pageStickers = data.pageStickers || { home: [], study: [], vlog: [], week: [], achieve: [], target: [] };
             idCounter = data.idCounter || 1;
@@ -453,19 +441,17 @@
         function renderSection(section) {
             const container = el(`${section}Media`);
             container.innerHTML = "";
-            // 修改4: 使用对应板块的文件夹数据
-            const sectionFolderData = folderData[section];
-            Object.keys(sectionFolderData.icons).forEach(fid => {
+            Object.keys(folderIcons).forEach(fid => {
                 const folder = document.createElement("div");
                 folder.className = "folder-item";
                 folder.dataset.id = fid;
                 folder.innerHTML = `
                     <button class="delete-folder" style="display: ${isAdmin ? 'flex' : 'none'}">×</button>
-                    <img src="${sectionFolderData.icons[fid]}" class="folder-icon" alt="${sectionFolderData.names[fid]}">
-                    <div class="folder-name" contenteditable="${isAdmin}">${sectionFolderData.names[fid]}</div>
+                    <img src="${folderIcons[fid]}" class="folder-icon" alt="${folderNames[fid]}">
+                    <div class="folder-name" contenteditable="${isAdmin}">${folderNames[fid]}</div>
                 `;
                 container.appendChild(folder);
-                bindFolderEvents(folder, fid, section); // 修改5: 传递板块名称
+                bindFolderEvents(folder, fid);
             });
         }
 
@@ -587,73 +573,60 @@
             const name = el("newFolderNameInput").value.trim();
             if (!name) { alert("Please enter a folder name!"); el("newFolderNameInput").focus(); return; }
             const folderId = `folder_${Date.now()}`;
-            // 修改6: 保存到对应板块的文件夹数据中
-            const sectionFolderData = folderData[currMedia];
-            sectionFolderData.names[folderId] = name;
-            
+            folderNames[folderId] = name;
             const preview = el("folderIconPreview").innerHTML;
-            sectionFolderData.icons[folderId] = preview.includes('img src=') ? preview.match(/src="(.*?)"/)[1] : "https://via.placeholder.com/70/ff66b3/ffffff?text=📁";
-            sectionFolderData.contents[folderId] = [];
+            folderIcons[folderId] = preview.includes('img src=') ? preview.match(/src="(.*?)"/)[1] : "https://via.placeholder.com/70/ff66b3/ffffff?text=📁";
+            folderContents[folderId] = [];
 
             const folder = document.createElement("div");
             folder.className = "folder-item";
             folder.dataset.id = folderId;
             folder.innerHTML = `
                 <button class="delete-folder" style="display: ${isAdmin ? 'flex' : 'none'}">×</button>
-                <img src="${sectionFolderData.icons[folderId]}" class="folder-icon" alt="${name}">
+                <img src="${folderIcons[folderId]}" class="folder-icon" alt="${name}">
                 <div class="folder-name" contenteditable="${isAdmin}">${name}</div>
             `;
             el(`${currMedia}Media`).appendChild(folder);
-            bindFolderEvents(folder, folderId, currMedia); // 修改7: 传递板块名称
+            bindFolderEvents(folder, folderId);
             closeModal("createFolderModal", "createFolderOverlay");
         });
 
-        function bindFolderEvents(folder, folderId, section) {
-            // 修改8: 获取对应板块的文件夹数据
-            const sectionFolderData = folderData[section];
+        function bindFolderEvents(folder, folderId) {
             const nameEl = folder.querySelector('.folder-name');
-            
             nameEl.addEventListener("blur", () => {
                 if (!isAdmin) return;
                 const newName = nameEl.textContent.trim() || "New Folder";
                 nameEl.textContent = newName;
-                sectionFolderData.names[folderId] = newName;
+                folderNames[folderId] = newName;
             });
-            
             folder.querySelector(".delete-folder").addEventListener("click", (e) => {
                 e.stopPropagation();
                 if (!isAdmin) return;
                 if (confirm("Delete this folder?")) {
                     folder.remove();
-                    delete sectionFolderData.icons[folderId];
-                    delete sectionFolderData.names[folderId];
-                    delete sectionFolderData.contents[folderId];
+                    delete folderIcons[folderId];
+                    delete folderNames[folderId];
+                    delete folderContents[folderId];
                 }
             });
-            
             folder.addEventListener("click", (e) => {
                 if (e.target.classList.contains('delete-folder') || e.target.classList.contains('folder-name')) return;
-                openFolder(folderId, section); // 修改9: 传递板块名称
+                openFolder(folderId);
             });
         }
 
-        function openFolder(folderId, section) {
+        function openFolder(folderId) {
             currFolder = folderId;
-            // 修改10: 获取对应板块的文件夹数据
-            const sectionFolderData = folderData[section];
-            el("folderPageTitle").textContent = sectionFolderData.names[folderId] || "Folder";
+            el("folderPageTitle").textContent = folderNames[folderId] || "Folder";
             el("folderPageModal").style.display = "block";
             el("folderPageOverlay").style.display = "block";
-            renderFolderMedia(folderId, section); // 修改11: 传递板块名称
+            renderFolderMedia(folderId);
         }
 
-        function renderFolderMedia(folderId, section) {
+        function renderFolderMedia(folderId) {
             el("folderMediaContent").innerHTML = "";
-            // 修改12: 获取对应板块的文件夹数据
-            const sectionFolderData = folderData[section];
-            if (!sectionFolderData.contents[folderId]) return;
-            
-            sectionFolderData.contents[folderId].forEach((file, idx) => {
+            if (!folderContents[folderId]) return;
+            folderContents[folderId].forEach((file, idx) => {
                 const item = document.createElement("div");
                 item.className = "file-item";
                 item.dataset.index = idx;
@@ -674,47 +647,39 @@
                     e.stopPropagation();
                     if (!isAdmin) return;
                     if (confirm("Delete?")) {
-                        sectionFolderData.contents[folderId].splice(idx,1);
-                        renderFolderMedia(folderId, section);
+                        folderContents[folderId].splice(idx,1);
+                        renderFolderMedia(folderId);
                     }
                 });
-                
                 item.querySelector(".file-name").addEventListener("blur", () => {
                     if (!isAdmin) return;
-                    sectionFolderData.contents[folderId][idx].name = item.querySelector(".file-name").textContent.trim();
+                    folderContents[folderId][idx].name = item.querySelector(".file-name").textContent.trim();
                 });
             });
         }
 
         el("uploadMediaBtn").addEventListener("click", () => {
             if (!isAdmin || !currFolder) return;
-            // 修改13: 获取当前板块的文件夹数据
-            const currentSection = Object.keys(folderData).find(section => 
-                folderData[section].contents[currFolder] !== undefined
-            );
-            if (!currentSection) return;
-            
             const input = document.createElement("input");
             input.type = "file";
             input.accept = "image/*,video/*";
             input.multiple = true;
             input.click();
-            
             input.addEventListener("change", (e) => {
                 for (let f of e.target.files) {
                     const url = URL.createObjectURL(f);
-                    folderData[currentSection].contents[currFolder].push({
+                    folderContents[currFolder].push({
                         name: f.name, originalName:f.name, type:f.type, url:url
                     });
                 }
-                renderFolderMedia(currFolder, currentSection);
+                renderFolderMedia(currFolder);
             });
         });
 
         el("studyAddFolderBtn").addEventListener("click", () => openCreateFolder("study"));
         el("vlogAddFolderBtn").addEventListener("click", () => openCreateFolder("vlog"));
         el("weekAddFolderBtn").addEventListener("click", () => openCreateFolder("week"));
-        el("achieveAddFolderBtn").addEventListener("click", () => openCreateFolder("achieve"));
+                el("achieveAddFolderBtn").addEventListener("click", () => openCreateFolder("achieve"));
 
         // ====================== 目标 Target ======================
         function renderTargets() {
@@ -729,11 +694,10 @@
             Object.keys(yearGroups).sort().forEach(year => {
                 const yearDiv = document.createElement("div");
                 yearDiv.className = "year-target-container";
-                // 修改14: 将"年目标"替换为英文"Goals"
                 yearDiv.innerHTML = `
                     <div class="year-header">
                         <input type="checkbox" class="year-checkbox" data-year="${year}" ${targets.every(t=>t.year!=year||t.done)?'checked':''}>
-                        <span class="year-label">${year} Goals</span>
+                        <span class="year-label">${year} 年目标</span>
                     </div>
                     <div class="goals-list" id="goals_${year}"></div>
                     <div class="target-actions">
@@ -783,7 +747,6 @@
             els(".target-delete-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
                     const year = btn.dataset.year;
-                    // 修改15: 确认提示改为英文
                     if (!confirm("Delete this year's targets?")) return;
                     targets = targets.filter(t=>t.year!=year);
                     renderTargets();
@@ -871,25 +834,6 @@
             if (save) saveAllData();
         }
 
-        // 修改16: 新增贴纸翻转按钮功能
-        el("flipHorizontalBtn").addEventListener("click", () => {
-            if (!selectedSticker || !stickerEdit) return;
-            const sid = selectedSticker.dataset.stickerId;
-            const s = pageStickers[currentPageId].find(x=>x.id===sid);
-            if (!s) return;
-            s.scaleX = s.scaleX * -1;
-            selectedSticker.style.transform = `rotate(${s.rotate||0}deg) scaleX(${s.scaleX}) scaleY(${s.scaleY||1})`;
-        });
-
-        el("flipVerticalBtn").addEventListener("click", () => {
-            if (!selectedSticker || !stickerEdit) return;
-            const sid = selectedSticker.dataset.stickerId;
-            const s = pageStickers[currentPageId].find(x=>x.id===sid);
-            if (!s) return;
-            s.scaleY = s.scaleY * -1;
-            selectedSticker.style.transform = `rotate(${s.rotate||0}deg) scaleX(${s.scaleX||1}) scaleY(${s.scaleY})`;
-        });
-
         el("addNewStickerBtn").addEventListener("click", () => {
             const input = document.createElement("input");
             input.type = "file";
@@ -906,9 +850,6 @@
                 sticker.style.left = "100px";
                 sticker.style.top = "100px";
                 sticker.style.width = "150px";
-                // 设置默认翻转值
-                sticker.dataset.scaleX = 1;
-                sticker.dataset.scaleY = 1;
 
                 if (file.type.startsWith("video/")) {
                     sticker.innerHTML = `
@@ -931,11 +872,9 @@
                     type: file.type.startsWith("video/")?"video":"image",
                     url: url,
                     x:100, y:100, w:150, h:"auto",
-                    rotate:0, scaleX:1, scaleY:1 // 初始化翻转值
+                    rotate:0, scaleX:1, scaleY:1
                 });
                 bindSticker(sticker);
-                // 设置选中状态
-                selectedSticker = sticker;
             };
         });
 
@@ -954,13 +893,7 @@
                 item.style.left = s.x+"px";
                 item.style.top = s.y+"px";
                 item.style.width = s.w+"px";
-                // 确保翻转值有默认值
-                const scaleX = s.scaleX !== undefined ? s.scaleX : 1;
-                const scaleY = s.scaleY !== undefined ? s.scaleY : 1;
-                item.style.transform = `rotate(${s.rotate||0}deg) scaleX(${scaleX}) scaleY(${scaleY})`;
-                // 存储翻转值到dataset
-                item.dataset.scaleX = scaleX;
-                item.dataset.scaleY = scaleY;
+                item.style.transform = `rotate(${s.rotate}deg) scaleX(${s.scaleX}) scaleY(${s.scaleY})`;
 
                 if (s.type === "video") {
                     item.innerHTML = `
@@ -986,14 +919,13 @@
             let startX, startY, origX, origY, origW, origH;
             let isResize = false;
 
-            // 拖动 - 增加选中状态
+            // 拖动
             sticker.addEventListener("mousedown", (e) => {
                 if (e.target.classList.contains("sticker-handle") 
                     || e.target.classList.contains("sticker-rotate-tip")
                     || e.target.classList.contains("sticker-flip-handle")) return;
                 if (e.button !== 0) return;
                 e.preventDefault();
-                // 设置选中状态
                 selectedSticker = sticker;
                 startX = e.clientX;
                 startY = e.clientY;
@@ -1039,10 +971,8 @@
                     document.removeEventListener("mousemove", move);
                     document.removeEventListener("mouseup", up);
                     const sid = sticker.dataset.stickerId;
-                                        const s = pageStickers[currentPageId].find(x=>x.id===sid);
-                    if (s) {
-                        s.w = parseInt(sticker.style.width)||150;
-                    }
+                    const s = pageStickers[currentPageId].find(x=>x.id===sid);
+                    if (s) s.w = parseInt(sticker.style.width)||150;
                 }
                 document.addEventListener("mousemove", move);
                 document.addEventListener("mouseup", up);
@@ -1055,37 +985,24 @@
                 isRotating = true;
                 rotateSticker = sticker;
                 const rect = sticker.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                rotateStartX = e.clientX;
-                rotateStartY = e.clientY;
-                rotateStartAngle = parseInt(sticker.style.transform.match(/rotate\((\d+)deg\)/)?.[1] || 0);
-                
+                const cx = rect.left + rect.width/2;
+                const cy = rect.top + rect.height/2;
+                rotateStartAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
+
                 function move(ev) {
-                    if (!isRotating || !rotateSticker) return;
-                    const dx = ev.clientX - centerX;
-                    const dy = ev.clientY - centerY;
-                    const startDx = rotateStartX - centerX;
-                    const startDy = rotateStartY - centerY;
-                    
-                    const angle = Math.atan2(dy, dx) - Math.atan2(startDy, startDx);
-                    const newAngle = rotateStartAngle + angle * (180 / Math.PI);
-                    const scaleX = sticker.dataset.scaleX || 1;
-                    const scaleY = sticker.dataset.scaleY || 1;
-                    rotateSticker.style.transform = `rotate(${newAngle}deg) scaleX(${scaleX}) scaleY(${scaleY})`;
+                    if (!isRotating) return;
+                    const ang = Math.atan2(ev.clientY - cy, ev.clientX - cx) * 180 / Math.PI;
+                    const diff = ang - rotateStartAngle;
+                    const sid = sticker.dataset.stickerId;
+                    const s = pageStickers[currentPageId].find(x=>x.id===sid);
+                    if (s) {
+                        s.rotate = (s.rotate||0) + diff;
+                        sticker.style.transform = `rotate(${s.rotate}deg) scaleX(${s.scaleX||1}) scaleY(${s.scaleY||1})`;
+                    }
+                    rotateStartAngle = ang;
                 }
-                
                 function up() {
                     isRotating = false;
-                    if (rotateSticker) {
-                        const sid = rotateSticker.dataset.stickerId;
-                        const s = pageStickers[currentPageId].find(x=>x.id===sid);
-                        if (s) {
-                            const match = rotateSticker.style.transform.match(/rotate\(([\d.-]+)deg\)/);
-                            s.rotate = match ? parseFloat(match[1]) : 0;
-                        }
-                        rotateSticker = null;
-                    }
                     document.removeEventListener("mousemove", move);
                     document.removeEventListener("mouseup", up);
                 }
@@ -1093,47 +1010,31 @@
                 document.addEventListener("mouseup", up);
             });
 
-            // 翻转按钮点击事件
+            // 翻转
             const flipHandle = sticker.querySelector(".sticker-flip-handle");
             flipHandle.addEventListener("click", (e) => {
                 e.stopPropagation();
-                if (!stickerEdit) return;
-                
-                // 切换水平翻转状态
-                const currentScaleX = parseFloat(sticker.dataset.scaleX || 1);
-                sticker.dataset.scaleX = currentScaleX * -1;
-                
-                const scaleY = parseFloat(sticker.dataset.scaleY || 1);
-                const rotate = parseInt(sticker.style.transform.match(/rotate\((\d+)deg\)/)?.[1] || 0);
-                sticker.style.transform = `rotate(${rotate}deg) scaleX(${sticker.dataset.scaleX}) scaleY(${scaleY})`;
-                
-                // 保存到数据
                 const sid = sticker.dataset.stickerId;
                 const s = pageStickers[currentPageId].find(x=>x.id===sid);
-                if (s) {
-                    s.scaleX = parseFloat(sticker.dataset.scaleX);
+                if (!s) return;
+                if (e.ctrlKey || e.metaKey) {
+                    s.scaleY = s.scaleY * -1;
+                } else {
+                    s.scaleX = s.scaleX * -1;
                 }
+                sticker.style.transform = `rotate(${s.rotate||0}deg) scaleX(${s.scaleX}) scaleY(${s.scaleY})`;
             });
 
-            // 右键删除贴纸
-            sticker.addEventListener("contextmenu", (e) => {
-                e.preventDefault();
-                if (!isAdmin) return;
+            // 删除
+            sticker.addEventListener("dblclick", () => {
+                if (!stickerEdit) return;
                 currentDeleteSticker = sticker;
                 el("deleteStickerModal").style.display = "block";
                 el("deleteStickerOverlay").style.display = "block";
             });
         }
 
-        // ====================== 个人资料编辑 ======================
-        el("profileTextColor").addEventListener("input", (e) => {
-            el("profileInfo").style.color = e.target.value;
-        });
-
-        el("profileFont").addEventListener("change", (e) => {
-            el("profileInfo").style.fontFamily = e.target.value;
-        });
-
+        // ====================== 首页头像 & 样式编辑 ======================
         el("profileImage").addEventListener("click", () => {
             if (!isAdmin) return;
             const input = document.createElement("input");
@@ -1141,30 +1042,27 @@
             input.accept = "image/*";
             input.click();
             input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        el("profileImage").src = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
+                const f = e.target.files[0];
+                if (!f) return;
+                el("profileImage").src = URL.createObjectURL(f);
             };
         });
 
-        // ====================== 页面初始化 ======================
-        window.addEventListener("beforeunload", saveAllData);
-        window.addEventListener("load", () => {
+        el("profileTextColor").addEventListener("input", () => {
+            el("profileInfo").style.color = el("profileTextColor").value;
+        });
+        el("profileFont").addEventListener("change", () => {
+            el("profileInfo").style.fontFamily = el("profileFont").value;
+        });
+
+        // ====================== 初始化 ======================
+        window.addEventListener("DOMContentLoaded", () => {
             loadAllData();
-            // 自动聚焦修复
-            els("input, textarea").forEach(el => {
-                el.addEventListener("focus", () => {
-                    el.style.borderColor = "#ff66b3";
-                });
-                el.addEventListener("blur", () => {
-                    el.style.borderColor = "#ffb3d9";
-                });
-            });
+            navigateTo("home");
+        });
+
+        window.addEventListener("beforeunload", (e) => {
+            if (isAdmin) saveAllData();
         });
     </script>
 </body>
