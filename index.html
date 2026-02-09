@@ -227,7 +227,7 @@
                         <p><span>Name:</span> Yomi Qiu</p>
                         <p><span>Birthday:</span> 2010.03.25</p>
                         <p><span>MBTI:</span> INTJ</p>
-                        <p><span>Hobbies:</span> Playing Tennis, Finding Delicious Food, Mediating</p>
+                        <p><span>Hobbies:</span> Playing Tennis, Finding Dilicious Food, Mediating</p>
                         <p><span>Self-introduction:</span> Hello! I'm Yomi, born on March 25, 2010. As an INTJ, I'm a thoughtful and independent person who loves to explore the world around me. I enjoy reading, creating art, and documenting my daily life through diaries and vlogs. This little corner of the internet is where I share my study journey, daily life, and personal goals. Welcome to my world!</p>
                     </div>
                 </div>
@@ -355,18 +355,145 @@
             target: []
         };
         
-        // 新增：个人资料设置存储
-        let profileSettings = {
-            imageUrl: "",
-            textColor: "#5a2e48",
-            fontFamily: "Comic Sans MS, Arial Rounded MT Bold, sans-serif",
-            profileText: ""
-        };
-        
         // 新增：旋转状态变量
         let isRotating = false;
         let rotateStartX, rotateStartY, rotateStartAngle = 0;
-        let rotateSticker = null; // 当前正在旋转的贴纸
+        let rotateSticker = null;
+        // 新增：个人资料存储变量
+let profileData = {
+    imageUrl: "",
+    textColor: "#5a2e48",
+    font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif",
+    content: ""
+};
+
+// ========== 新增：本地存储功能 ==========
+// 保存所有数据到localStorage
+function saveAllData() {
+    const data = {
+        folderIcons,
+        folderNames,
+        folderContents,
+        targets,
+        idCounter,
+        pageStickers,
+        profileData: {
+            imageUrl: el("profileImage").src,
+            textColor: el("profileInfo").style.color || "#5a2e48",
+            font: el("profileInfo").style.fontFamily || "Comic Sans MS, Arial Rounded MT Bold, sans-serif",
+            content: el("profileInfo").innerHTML
+        }
+    };
+    localStorage.setItem("yomiWorldData", JSON.stringify(data));
+}
+
+// 从localStorage加载所有数据
+function loadAllData() {
+    const savedData = localStorage.getItem("yomiWorldData");
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            // 恢复文件夹相关数据
+            if (data.folderIcons) folderIcons = data.folderIcons;
+            if (data.folderNames) folderNames = data.folderNames;
+            if (data.folderContents) folderContents = data.folderContents;
+            
+            // 恢复目标数据
+            if (data.targets) targets = data.targets;
+            if (data.idCounter) idCounter = data.idCounter;
+            
+            // 恢复贴纸数据
+            if (data.pageStickers) pageStickers = data.pageStickers;
+            
+            // 恢复个人资料数据
+            if (data.profileData) {
+                profileData = data.profileData;
+                // 应用个人资料
+                if (profileData.imageUrl) el("profileImage").src = profileData.imageUrl;
+                if (profileData.textColor) el("profileInfo").style.color = profileData.textColor;
+                if (profileData.font) el("profileInfo").style.fontFamily = profileData.font;
+                if (profileData.content) el("profileInfo").innerHTML = profileData.content;
+            }
+            
+            // 重新渲染UI
+            renderAllMediaSections();
+            renderTargets();
+        } catch (e) {
+            console.error("加载保存数据失败:", e);
+        }
+    }
+}
+
+// 重新渲染所有媒体区域（文件夹）
+function renderAllMediaSections() {
+    // 渲染study、vlog、week、achieve四个区域的文件夹
+    ["study", "vlog", "week", "achieve"].forEach(section => {
+        const mediaContainer = el(`${section}Media`);
+        mediaContainer.innerHTML = "";
+        
+        // 遍历所有文件夹ID，筛选属于当前区域的文件夹（通过key判断）
+        Object.keys(folderNames).forEach(folderId => {
+            // 检查文件夹是否属于当前区域（通过content判断，兼容旧数据）
+            const isSectionFolder = folderContents[folderId] ? true : false;
+            
+            if (isSectionFolder) {
+                const name = folderNames[folderId];
+                const folder = document.createElement("div");
+                folder.className = "folder-item";
+                folder.dataset.id = folderId;
+                folder.innerHTML = `
+                    <button class="delete-folder" style="display: ${isAdmin ? 'flex' : 'none'}">×</button>
+                    <img src="${folderIcons[folderId] || 'https://via.placeholder.com/70/ff66b3/ffffff?text=📁'}" class="folder-icon" alt="${name}">
+                    <div class="folder-name" contenteditable="${isAdmin}">${name}</div>
+                `;
+
+                // 名称编辑事件
+                const nameEl = folder.querySelector('.folder-name');
+                nameEl.addEventListener("keydown", (e) => {
+                    if (!isAdmin) return;
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        nameEl.blur();
+                    }
+                });
+
+                nameEl.addEventListener("blur", () => {
+                    if (!isAdmin) return;
+                    const newName = nameEl.textContent.trim() || "New Folder";
+                    nameEl.textContent = newName;
+                    folderNames[folderId] = newName;
+                    saveAllData(); // 保存修改
+                });
+
+                // 删除文件夹事件
+                folder.querySelector(".delete-folder").addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (!isAdmin) return;
+                    if (confirm(`Are you sure to delete the folder "${nameEl.textContent}"?\nAll contents inside will also be deleted.`)) {
+                        if (folderContents[folderId]) {
+                            folderContents[folderId].forEach(file => {
+                                if (file.url && file.url.startsWith('blob:')) URL.revokeObjectURL(file.url);
+                            });
+                        }
+                        mediaContainer.removeChild(folder);
+                        delete folderIcons[folderId];
+                        delete folderNames[folderId];
+                        delete folderContents[folderId];
+                        saveAllData(); // 保存修改
+                    }
+                });
+
+                // 打开文件夹事件
+                folder.addEventListener("click", (e) => {
+                    if (e.target.classList.contains('delete-folder') || e.target.classList.contains('folder-name')) return;
+                    openFolder(folderId);
+                });
+
+                mediaContainer.appendChild(folder);
+            }
+        });
+    });
+}
 
         // 激励语
         const quotes = [
@@ -376,76 +503,7 @@
             "Every small step leads to big achievements! 🚀", "Consistency is key, and you nailed it! 🗝️"
         ];
 
-        // ========== 新增：本地存储相关函数 ==========
-        // 保存所有数据到本地存储
-        function saveAllDataToLocalStorage() {
-            const data = {
-                folderIcons: folderIcons,
-                folderNames: folderNames,
-                folderContents: folderContents,
-                targets: targets,
-                idCounter: idCounter,
-                pageStickers: pageStickers,
-                profileSettings: profileSettings
-            };
-            localStorage.setItem('yomisWorldData', JSON.stringify(data));
-        }
-
-        // 从本地存储加载所有数据
-        function loadAllDataFromLocalStorage() {
-            const savedData = localStorage.getItem('yomisWorldData');
-            if (savedData) {
-                try {
-                    const data = JSON.parse(savedData);
-                    folderIcons = data.folderIcons || {};
-                    folderNames = data.folderNames || {};
-                    folderContents = data.folderContents || {};
-                    targets = data.targets || [];
-                    idCounter = data.idCounter || 1;
-                    pageStickers = data.pageStickers || {
-                        home: [],
-                        study: [],
-                        vlog: [],
-                        week: [],
-                        achieve: [],
-                        target: []
-                    };
-                    profileSettings = data.profileSettings || {
-                        imageUrl: "",
-                        textColor: "#5a2e48",
-                        fontFamily: "Comic Sans MS, Arial Rounded MT Bold, sans-serif",
-                        profileText: ""
-                    };
-                    
-                    // 恢复个人资料设置
-                    if (profileSettings.imageUrl) {
-                        el("profileImage").src = profileSettings.imageUrl;
-                    }
-                    el("profileInfo").style.color = profileSettings.textColor;
-                    el("profileInfo").style.fontFamily = profileSettings.fontFamily;
-                    el("profileTextColor").value = profileSettings.textColor;
-                    el("profileFont").value = profileSettings.fontFamily;
-                    if (profileSettings.profileText) {
-                        el("profileInfo").innerHTML = profileSettings.profileText;
-                    }
-                    
-                    console.log("Data loaded from localStorage successfully");
-                } catch (e) {
-                    console.error("Error loading data from localStorage:", e);
-                }
-            }
-        }
-
-        // 保存个人资料设置
-        function saveProfileSettings() {
-            profileSettings.imageUrl = el("profileImage").src;
-            profileSettings.textColor = el("profileInfo").style.color || "#5a2e48";
-            profileSettings.fontFamily = el("profileInfo").style.fontFamily || "Comic Sans MS, Arial Rounded MT Bold, sans-serif";
-            profileSettings.profileText = el("profileInfo").innerHTML;
-            saveAllDataToLocalStorage();
-        }
-
-        // ========== 页面导航 - 关键修改：切换页面时加载对应贴纸 ==========
+        // 页面导航 - 关键修改：切换页面时加载对应贴纸
         function navigateTo(pageId) {
             // 结束当前贴纸编辑
             if (stickerEdit) {
@@ -488,9 +546,6 @@
             isAdmin = false;
             el("exitEditModal").style.display = el("exitEditOverlay").style.display = "none";
             
-            // 保存所有修改
-            saveAllDataToLocalStorage();
-            
             // 隐藏所有编辑相关按钮
             els(".add-folder-btn, .add-target-btn, .sticker-button, .profile-edit-tools").forEach(e => e.style.display = "none");
             els(".delete-folder, .delete-file, .target-edit-btn, .target-delete-btn").forEach(e => e.style.display = "none");
@@ -508,7 +563,7 @@
             // 结束贴纸编辑
             if (stickerEdit) finishSticker(true);
             
-            alert("✨ Edit mode ended! All changes have been saved.");
+            alert("✨ Edit mode ended! You can no longer modify content.");
         });
 
         // 取消退出
@@ -588,9 +643,6 @@
                 // 从DOM中移除
                 currentDeleteSticker.remove();
                 currentDeleteSticker = null;
-                
-                // 保存修改
-                saveAllDataToLocalStorage();
             }
             closeModal("deleteStickerModal", "deleteStickerOverlay");
         });
@@ -661,9 +713,7 @@
                 const newName = nameEl.textContent.trim() || "New Folder";
                 nameEl.textContent = newName;
                 folderNames[folderId] = newName;
-                
-                // 保存修改
-                saveAllDataToLocalStorage();
+                saveAllData(); 
             });
 
             // 删除文件夹
@@ -680,9 +730,6 @@
                     delete folderIcons[folderId];
                     delete folderNames[folderId];
                     delete folderContents[folderId];
-                    
-                    // 保存修改
-                    saveAllDataToLocalStorage();
                 }
             });
 
@@ -707,10 +754,8 @@
                 }, 200);
             }
 
-            // 保存修改
-            saveAllDataToLocalStorage();
-            
             closeModal("createFolderModal", "createFolderOverlay");
+            saveAllData();
         });
 
         // 打开文件夹详情
@@ -762,9 +807,7 @@
                     const newName = fileNameEl.textContent.trim() || file.originalName;
                     fileNameEl.textContent = newName;
                     folderContents[folderId][idx].name = newName;
-                    
-                    // 保存修改
-                    saveAllDataToLocalStorage();
+                    saveAllData();
                 });
 
                 // 删除文件
@@ -774,10 +817,8 @@
                     if (confirm(`Are you sure to delete "${fileNameEl.textContent}"?`)) {
                         if (file.url && file.url.startsWith('blob:')) URL.revokeObjectURL(file.url);
                         folderContents[folderId].splice(idx, 1);
-                        renderFolderMedia(folderId);
-                        
-                        // 保存修改
-                        saveAllDataToLocalStorage();
+                        renderFolderMedia(folderId)
+                        saveAllData();
                     }
                 });
 
@@ -826,9 +867,7 @@
                 }
 
                 renderFolderMedia(currFolder);
-                
-                // 保存修改
-                saveAllDataToLocalStorage();
+                saveAllData();
             });
         });
 
@@ -886,9 +925,8 @@
                             t.completed = e.target.checked;
                             renderTargets();
                             checkYearDone(year);
-                            
-                            // 保存修改
-                            saveAllDataToLocalStorage();
+                            saveAllData();
+
                         }
                     });
                 });
@@ -900,9 +938,8 @@
                     yearTargets.forEach(t => t.completed = checked);
                     renderTargets();
                     if (checked) generateAchievement(y);
-                    
-                    // 保存修改
-                    saveAllDataToLocalStorage();
+                    saveAllData();
+
                 });
 
                 // 操作按钮
@@ -922,9 +959,7 @@
                     if (confirm(`Are you sure to delete all goals for ${year}?`)) {
                         targets = targets.filter(t => t.year !== year);
                         renderTargets();
-                        
-                        // 保存修改
-                        saveAllDataToLocalStorage();
+                        saveAllData();
                     }
                 });
 
@@ -990,9 +1025,6 @@
                     if (!isAdmin) return;
                     if (confirm(`Are you sure to delete the ${year} achievement?`)) {
                         achieveMedia.removeChild(item);
-                        
-                        // 保存修改
-                        saveAllDataToLocalStorage();
                     }
                 });
 
@@ -1007,9 +1039,6 @@
 
                 if (achieveMedia.firstChild) achieveMedia.insertBefore(item, achieveMedia.firstChild);
                 else achieveMedia.appendChild(item);
-                
-                // 保存修改
-                saveAllDataToLocalStorage();
             };
 
             el("confirmAchievementBtn").addEventListener("click", () => {
@@ -1076,9 +1105,8 @@
             renderTargets();
             closeModal("targetModal", "targetOverlay");
             editTargetId = null;
-            
-            // 保存修改
-            saveAllDataToLocalStorage();
+            saveAllData();
+
         });
 
         // 首页编辑
@@ -1096,8 +1124,8 @@
                     const reader = new FileReader();
                     reader.onload = (ev) => {
                         el("profileImage").src = ev.target.result;
-                        saveProfileSettings(); // 保存个人资料
-                        alert("Profile image updated successfully! Changes have been saved.");
+                        alert("Profile image updated successfully!");
+                        saveAllData();
                     };
                     reader.readAsDataURL(file);
                 }
@@ -1108,20 +1136,15 @@
         el("profileTextColor").addEventListener("input", () => {
             if (!isAdmin) return;
             el("profileInfo").style.color = el("profileTextColor").value;
-            saveProfileSettings(); // 保存个人资料
+            saveAllData();
+
         });
 
         el("profileFont").addEventListener("change", () => {
             if (!isAdmin) return;
             el("profileInfo").style.fontFamily = el("profileFont").value;
-            saveProfileSettings(); // 保存个人资料
-        });
+            saveAllData();
 
-        // 监听个人资料文本修改
-        el("profileInfo").addEventListener("blur", () => {
-            if (isAdmin) {
-                saveProfileSettings(); // 保存个人资料
-            }
         });
 
         // ========== 贴纸功能 - 关键修改：页面独立贴纸 ==========
@@ -1146,9 +1169,6 @@
             });
             
             pageStickers[pageId] = stickers;
-            
-            // 保存到本地存储
-            saveAllDataToLocalStorage();
         }
 
         // 加载指定页面的贴纸
@@ -1161,380 +1181,607 @@
                 const sticker = document.createElement("div");
                 sticker.className = "sticker-item";
                 sticker.dataset.stickerId = stickerData.id;
-                sticker.dataset.type = stickerData.type
-                                sticker.dataset.url = stickerData.url;
+                sticker.dataset.type = stickerData.type;
+                sticker.dataset.url = stickerData.url;
                 sticker.style.top = stickerData.top;
                 sticker.style.left = stickerData.left;
                 sticker.style.width = stickerData.width;
                 sticker.style.height = stickerData.height;
                 sticker.style.transform = stickerData.transform;
-
-                // 根据类型创建贴纸内容
-                if (stickerData.type === 'image') {
+                
+                if (stickerData.type.startsWith("image/")) {
                     sticker.innerHTML = `
-                        <img src="${stickerData.url}" style="width:100%;height:100%;object-fit:contain;">
+                        <img src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;">
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
-                        <div class="sticker-flip-handle">↔</div>
-                        <div class="sticker-flip-menu">
-                            <div class="flip-option" data-flip="horizontal">Horizontal ↔</div>
-                            <div class="flip-option" data-flip="vertical">Vertical ↕</div>
-                        </div>
+                        <div class="sticker-flip-handle">🔄</div>
                     `;
-                } else if (stickerData.type === 'video') {
+                } else if (stickerData.type.startsWith("video/")) {
                     sticker.innerHTML = `
-                        <video src="${stickerData.url}" style="width:100%;height:100%;object-fit:contain;" controls muted playsinline>
+                        <video src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
-                        <div class="sticker-flip-handle">↔</div>
-                        <div class="sticker-flip-menu">
-                            <div class="flip-option" data-flip="horizontal">Horizontal ↔</div>
-                            <div class="flip-option" data-flip="vertical">Vertical ↕</div>
-                        </div>
+                        <div class="sticker-flip-handle">🔄</div>
                     `;
                 }
-
-                // 添加贴纸交互事件
-                initStickerEvents(sticker);
-                container.appendChild(sticker);
-            });
-        }
-
-        // 初始化贴纸交互事件
-        function initStickerEvents(sticker) {
-            // 贴纸拖动
-            let isDragging = false;
-            let dragStartX, dragStartY, stickerStartX, stickerStartY;
-
-            sticker.addEventListener('mousedown', (e) => {
-                if (!stickerEdit) return;
-                if (e.target.classList.contains('sticker-handle') || 
-                    e.target.classList.contains('sticker-rotate-tip') ||
-                    e.target.classList.contains('sticker-flip-handle')) {
-                    return;
-                }
                 
-                // 取消其他贴纸的选中状态
-                document.querySelectorAll('.sticker-item').forEach(s => {
-                    s.classList.remove('editable');
-                    s.querySelector('.sticker-flip-menu')?.style.display = 'none';
-                });
-                // 设置当前贴纸为选中状态
-                sticker.classList.add('editable');
-                selectedSticker = sticker;
-
-                isDragging = true;
-                dragStartX = e.clientX;
-                dragStartY = e.clientY;
-                stickerStartX = parseFloat(sticker.style.left || 0);
-                stickerStartY = parseFloat(sticker.style.top || 0);
-                sticker.style.zIndex = 801;
-                e.preventDefault();
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging || !stickerEdit) return;
-                
-                const dx = e.clientX - dragStartX;
-                const dy = e.clientY - dragStartY;
-                sticker.style.left = `${stickerStartX + dx}px`;
-                sticker.style.top = `${stickerStartY + dy}px`;
-            });
-
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-
-            // 贴纸缩放
-            let isResizing = false;
-            let resizeStartX, resizeStartY, stickerStartWidth, stickerStartHeight;
-            
-            const handle = sticker.querySelector('.sticker-handle');
-            handle.addEventListener('mousedown', (e) => {
-                if (!stickerEdit) return;
-                
-                isResizing = true;
-                resizeStartX = e.clientX;
-                resizeStartY = e.clientY;
-                stickerStartWidth = parseFloat(sticker.style.width || 100);
-                stickerStartHeight = parseFloat(sticker.style.height || 100);
-                e.preventDefault();
-                e.stopPropagation();
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (!isResizing || !stickerEdit) return;
-                
-                const dx = e.clientX - resizeStartX;
-                const dy = e.clientY - resizeStartY;
-                const newWidth = Math.max(50, stickerStartWidth + dx);
-                const newHeight = Math.max(50, stickerStartHeight + dy);
-                
-                sticker.style.width = `${newWidth}px`;
-                sticker.style.height = `${newHeight}px`;
-            });
-
-            document.addEventListener('mouseup', () => {
-                isResizing = false;
-            });
-
-            // 贴纸旋转
-            const rotateTip = sticker.querySelector('.sticker-rotate-tip');
-            rotateTip.addEventListener('mousedown', (e) => {
-                if (!stickerEdit) return;
-                
-                isRotating = true;
-                rotateSticker = sticker;
-                const rect = sticker.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                rotateStartX = e.clientX;
-                rotateStartY = e.clientY;
-                
-                // 获取当前旋转角度
-                const transform = sticker.style.transform || 'rotate(0deg)';
-                rotateStartAngle = parseFloat(transform.match(/rotate\((\d+)deg\)/)[1]) || 0;
-                
-                // 计算初始角度
-                const initialAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
-                rotateStartAngle -= initialAngle;
-                
-                e.preventDefault();
-                e.stopPropagation();
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (!isRotating || !rotateSticker || !stickerEdit) return;
-                
-                const rect = rotateSticker.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                
-                // 计算当前角度
-                const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
-                const newRotation = rotateStartAngle + currentAngle;
-                
-                rotateSticker.style.transform = `rotate(${newRotation}deg)`;
-            });
-
-            document.addEventListener('mouseup', () => {
-                isRotating = false;
-                rotateSticker = null;
-            });
-
-            // 翻转菜单
-            const flipHandle = sticker.querySelector('.sticker-flip-handle');
-            const flipMenu = sticker.querySelector('.sticker-flip-menu');
-            
-            flipHandle.addEventListener('click', (e) => {
-                if (!stickerEdit) return;
-                
-                e.stopPropagation();
-                flipMenu.style.display = flipMenu.style.display === 'block' ? 'none' : 'block';
-            });
-
-            // 翻转选项
-            flipMenu.querySelectorAll('.flip-option').forEach(option => {
-                option.addEventListener('click', (e) => {
+                // 贴纸选中逻辑
+                sticker.addEventListener("click", (e) => {
                     if (!stickerEdit) return;
-                    
                     e.stopPropagation();
-                    const flipType = option.dataset.flip;
-                    const currentTransform = sticker.style.transform || '';
                     
-                    if (flipType === 'horizontal') {
-                        if (currentTransform.includes('scaleX(-1)')) {
-                            sticker.style.transform = currentTransform.replace(' scaleX(-1)', '').replace('scaleX(-1) ', '').replace('scaleX(-1)', '');
-                        } else {
-                            sticker.style.transform = `${currentTransform} scaleX(-1)`;
-                        }
-                    } else if (flipType === 'vertical') {
-                        if (currentTransform.includes('scaleY(-1)')) {
-                            sticker.style.transform = currentTransform.replace(' scaleY(-1)', '').replace('scaleY(-1) ', '').replace('scaleY(-1)', '');
-                        } else {
-                            sticker.style.transform = `${currentTransform} scaleY(-1)`;
-                        }
-                    }
-                    flipMenu.style.display = 'none';
+                    // 取消其他贴纸的选中状态
+                    els('.sticker-item').forEach(s => {
+                        s.style.outline = 'none';
+                    });
+                    
+                    // 设置当前贴纸为选中状态
+                    selectedSticker = sticker;
+                    sticker.style.outline = '2px solid #ff66b3';
                 });
-            });
-
-            // 点击空白处关闭翻转菜单
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.sticker-flip-menu') && !e.target.closest('.sticker-flip-handle')) {
-                    flipMenu.style.display = 'none';
-                }
-            });
-
-            // 删除贴纸（右键菜单）
-            sticker.addEventListener('contextmenu', (e) => {
-                if (!stickerEdit || !isAdmin) return;
                 
-                e.preventDefault();
-                currentDeleteSticker = sticker;
-                el("deleteStickerModal").style.display = "block";
-                el("deleteStickerOverlay").style.display = "block";
+                // 双击删除
+                sticker.addEventListener("dblclick", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentDeleteSticker = sticker;
+                    el("deleteStickerModal").style.display = "block";
+                    el("deleteStickerOverlay").style.display = "block";
+                });
+                
+                container.appendChild(sticker);
+                initStickerDrag(sticker);
+                initStickerResize(sticker);
+                initStickerRotate(sticker);
+                initStickerFlipMenu(sticker);// 使用优化后的旋转函数
             });
         }
 
-        // 贴纸按钮点击事件
         el("stickerButton").addEventListener("click", () => {
             if (!isAdmin) return;
             
-            stickerEdit = !stickerEdit;
-            const container = el(`stickerContainer_${currentPageId}`);
-            
-            if (stickerEdit) {
-                // 进入贴纸编辑模式
-                el("stickerToolbar").style.display = "block";
-                container.querySelectorAll('.sticker-item').forEach(s => {
-                    s.classList.add('editable');
+            if (!stickerEdit) {
+                // 进入编辑模式
+                stickerEdit = true;
+                el("stickerButton").textContent = "✅";
+                el("stickerButton").style.backgroundColor = "#ff3399";
+                el("stickerToolbar").style.display = "block"; // 显示工具栏
+                
+                // 把当前页面所有现有贴纸设为可编辑
+                const container = el(`stickerContainer_${currentPageId}`);
+                container.querySelectorAll('.sticker-item').forEach(sticker => {
+                    sticker.classList.add('editable');
+                    sticker.style.pointerEvents = 'all';
                 });
-                alert("✨ Sticker edit mode activated!\n- Drag to move stickers\n- Resize with bottom-right handle\n- Rotate with top-left handle\n- Right-click to delete stickers");
+                
+                // 首次打开时默认打开文件选择器添加新贴纸
+                openStickerFileSelector();
             } else {
-                // 退出贴纸编辑模式（需要确认）
+                // 完成编辑
                 el("stickerConfirmModal").style.display = "block";
                 el("stickerConfirmOverlay").style.display = "block";
             }
         });
 
-        // 完成贴纸编辑
-        function finishSticker(save = true) {
-            if (save) {
-                // 保存贴纸状态
+        // 打开贴纸文件选择器
+        function openStickerFileSelector() {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*,video/*";
+            input.multiple = true; // 支持多选
+            input.click();
+            
+            input.addEventListener("change", (e) => {
+                const files = e.target.files;
+                if (files && stickerEdit) {
+                    // 批量添加贴纸
+                    Array.from(files).forEach(file => addSticker(file));
+                }
+            });
+        }
+
+        // 绑定添加新贴纸按钮
+        el("addNewStickerBtn").addEventListener("click", () => {
+            if (stickerEdit) openStickerFileSelector();
+        });
+
+        // 翻转功能实现
+function flipSticker(sticker, direction) {
+    if (!sticker) return;
+    
+    // 获取当前transform样式
+    let currentTransform = sticker.style.transform || 'none';
+    
+    // 解析当前的scaleX和scaleY值（修复变量初始化bug）
+    let scaleX = 1; // 修复：补充初始化scaleX
+    let scaleY = 1;
+    const scaleXMatch = currentTransform.match(/scaleX\(([-+]?\d*\.?\d+)\)/);
+    const scaleYMatch = currentTransform.match(/scaleY\(([-+]?\d*\.?\d+)\)/);
+    
+    if (scaleXMatch) scaleX = parseFloat(scaleXMatch[1]);
+    if (scaleYMatch) scaleY = parseFloat(scaleYMatch[1]);
+    
+    // 根据方向设置翻转
+    if (direction === 'horizontal') {
+        scaleX = scaleX * -1;
+        // 移除旧的scaleX，添加新的
+        currentTransform = currentTransform.replace(/scaleX\([-+]?\d*\.?\d+\)/g, '');
+        currentTransform += ` scaleX(${scaleX})`;
+    } else if (direction === 'vertical') {
+        scaleY = scaleY * -1;
+        // 移除旧的scaleY，添加新的
+        currentTransform = currentTransform.replace(/scaleY\([-+]?\d*\.?\d+\)/g, '');
+        currentTransform += ` scaleY(${scaleY})`;
+    }
+    
+    // 清理多余空格和开头/结尾的空格
+    currentTransform = currentTransform.trim().replace(/\s+/g, ' ');
+    if (currentTransform === '') currentTransform = 'none';
+    
+    sticker.style.transform = currentTransform;
+}
+
+        // 绑定水平翻转按钮
+        el("flipHorizontalBtn").addEventListener("click", () => {
+            if (selectedSticker && stickerEdit) {
+                flipSticker(selectedSticker, 'horizontal');
+            } else {
+                alert("Please select a sticker first!");
+            }
+        });
+
+        // 绑定垂直翻转按钮
+        el("flipVerticalBtn").addEventListener("click", () => {
+            if (selectedSticker && stickerEdit) {
+                flipSticker(selectedSticker, 'vertical');
+            } else {
+                alert("Please select a sticker first!");
+            }
+        });
+
+        // 确认完成贴纸编辑
+        el("confirmStickerBtn").addEventListener("click", () => {
+            finishSticker(true);
+        });
+
+        // 取消贴纸编辑
+        el("cancelStickerBtn").addEventListener("click", () => {
+            finishSticker(false);
+        });
+
+        // 完成贴纸编辑逻辑
+        function finishSticker(saveChanges) {
+            if (saveChanges) {
+                // 保存当前页面的贴纸状态
                 savePageStickers(currentPageId);
-                alert("✨ Sticker changes saved successfully!");
+            } else {
+                // 取消编辑，重新加载贴纸
+                loadPageStickers(currentPageId);
             }
             
             // 退出编辑模式
             stickerEdit = false;
-            el("stickerToolbar").style.display = "none";
-            const container = el(`stickerContainer_${currentPageId}`);
-            container.querySelectorAll('.sticker-item').forEach(s => {
-                s.classList.remove('editable');
-                s.querySelector('.sticker-flip-menu')?.style.display = 'none';
-            });
             selectedSticker = null;
-            closeModal("stickerConfirmModal", "stickerConfirmOverlay");
+            el("stickerButton").textContent = "🍪";
+            el("stickerButton").style.backgroundColor = "#ff66b3";
+            el("stickerToolbar").style.display = "none";
+            el("stickerConfirmModal").style.display = el("stickerConfirmOverlay").style.display = "none";
+            
+            // 移除所有贴纸的编辑状态
+            const container = el(`stickerContainer_${currentPageId}`);
+            container.querySelectorAll('.sticker-item').forEach(sticker => {
+                sticker.classList.remove('editable');
+                sticker.style.outline = 'none';
+                sticker.style.pointerEvents = 'auto';
+            });
         }
 
-        // 确认保存贴纸修改
-        el("confirmStickerBtn").addEventListener("click", () => finishSticker(true));
-        el("cancelStickerBtn").addEventListener("click", () => finishSticker(false));
+        // 添加贴纸
+        function addSticker(file) {
+            const container = el(`stickerContainer_${currentPageId}`);
+            const url = URL.createObjectURL(file);
+            const stickerId = `sticker_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+            
+            const sticker = document.createElement("div");
+            sticker.className = "sticker-item editable";
+            sticker.dataset.stickerId = stickerId;
+            sticker.dataset.type = file.type;
+            sticker.dataset.url = url;
+            
+            // 初始位置和大小
+            const startX = 50 + Math.random() * (container.clientWidth - 200);
+            const startY = 50 + Math.random() * (container.clientHeight - 200);
+            sticker.style.top = `${startY}px`;
+            sticker.style.left = `${startX}px`;
+            sticker.style.width = "150px";
+            sticker.style.height = "150px";
+            sticker.style.transform = "rotate(0deg)";
+            
+            // 根据文件类型创建内容
+            if (file.type.startsWith("image/")) {
+                sticker.innerHTML = `
+                    <img src="${url}" style="width: 100%; height: 100%; object-fit: contain;">
+                    <div class="sticker-handle"></div>
+                    <div class="sticker-rotate-tip">↺</div>
+                    <div class="sticker-flip-handle">🔄</div>
+                `;
+            } else if (file.type.startsWith("video/")) {
+                sticker.innerHTML = `
+                    <video src="${url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
+                    <div class="sticker-handle"></div>
+                    <div class="sticker-rotate-tip">↺</div>
+                    <div class="sticker-flip-handle">🔄</div>
+                `;
+            }
+            
+            // 贴纸选中事件
+            sticker.addEventListener("click", (e) => {
+                if (!stickerEdit) return;
+                e.stopPropagation();
+                
+                // 取消其他贴纸选中状态
+                els('.sticker-item').forEach(s => {
+                    s.style.outline = 'none';
+                });
+                
+                // 设置当前选中贴纸
+                selectedSticker = sticker;
+                sticker.style.outline = '2px solid #ff66b3';
+            });
+            
+            // 双击删除
+            sticker.addEventListener("dblclick", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                currentDeleteSticker = sticker;
+                el("deleteStickerModal").style.display = "block";
+                el("deleteStickerOverlay").style.display = "block";
+            });
+            
+            container.appendChild(sticker);
+            
+            // 初始化贴纸交互
+            initStickerDrag(sticker);
+            initStickerResize(sticker);
+            initStickerRotate(sticker);
+            initStickerFlipMenu(sticker);
+            
+            // 默认选中新添加的贴纸
+            selectedSticker = sticker;
+            sticker.style.outline = '2px solid #ff66b3';
+        }
 
-        // 添加新贴纸
-        el("addNewStickerBtn").addEventListener("click", () => {
-            if (!stickerEdit || !isAdmin) return;
+        // 初始化贴纸拖拽
+        function initStickerDrag(sticker) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
             
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "image/*,video/*";
-            input.click();
-            
-            input.addEventListener("change", (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const url = URL.createObjectURL(file);
-                const stickerId = `sticker_${Date.now()}`;
-                const container = el(`stickerContainer_${currentPageId}`);
-                
-                // 创建新贴纸
-                const sticker = document.createElement("div");
-                sticker.className = "sticker-item editable";
-                sticker.dataset.stickerId = stickerId;
-                sticker.dataset.type = file.type.startsWith('image/') ? 'image' : 'video';
-                sticker.dataset.url = url;
-                sticker.style.top = '100px';
-                sticker.style.left = '100px';
-                sticker.style.width = '150px';
-                sticker.style.height = '150px';
-                sticker.style.transform = 'rotate(0deg)';
-                
-                // 创建贴纸内容
-                if (file.type.startsWith('image/')) {
-                    sticker.innerHTML = `
-                        <img src="${url}" style="width:100%;height:100%;object-fit:contain;">
-                        <div class="sticker-handle"></div>
-                        <div class="sticker-rotate-tip">↺</div>
-                        <div class="sticker-flip-handle">↔</div>
-                        <div class="sticker-flip-menu">
-                            <div class="flip-option" data-flip="horizontal">Horizontal ↔</div>
-                            <div class="flip-option" data-flip="vertical">Vertical ↕</div>
-                        </div>
-                    `;
-                } else if (file.type.startsWith('video/')) {
-                    sticker.innerHTML = `
-                        <video src="${url}" style="width:100%;height:100%;object-fit:contain;" controls muted playsinline></video>
-                        <div class="sticker-handle"></div>
-                        <div class="sticker-rotate-tip">↺</div>
-                        <div class="sticker-flip-handle">↔</div>
-                        <div class="sticker-flip-menu">
-                            <div class="flip-option" data-flip="horizontal">Horizontal ↔</div>
-                            <div class="flip-option" data-flip="vertical">Vertical ↕</div>
-                        </div>
-                    `;
+            sticker.addEventListener("mousedown", (e) => {
+                if (!stickerEdit || e.target.classList.contains('sticker-handle') || 
+                    e.target.classList.contains('sticker-rotate-tip') || 
+                    e.target.classList.contains('sticker-flip-handle')) {
+                    return;
                 }
                 
-                // 初始化交互事件
-                initStickerEvents(sticker);
-                container.appendChild(sticker);
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
                 
-                // 保存贴纸数据
-                savePageStickers(currentPageId);
+                // 获取初始位置
+                initialX = parseFloat(sticker.style.left) || 0;
+                initialY = parseFloat(sticker.style.top) || 0;
                 
-                // 设置为选中状态
-                document.querySelectorAll('.sticker-item').forEach(s => s.classList.remove('editable'));
-                sticker.classList.add('editable');
-                selectedSticker = sticker;
+                // 提高层级
+                sticker.style.zIndex = 901;
+                
+                // 鼠标样式
+                document.body.style.cursor = "move";
+                
+                // 阻止默认行为
+                e.preventDefault();
+            });
+            
+            document.addEventListener("mousemove", (e) => {
+                if (!isDragging || !stickerEdit) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                sticker.style.left = `${initialX + dx}px`;
+                sticker.style.top = `${initialY + dy}px`;
+            });
+            
+            document.addEventListener("mouseup", () => {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.style.cursor = "default";
+                }
+            });
+            
+            // 移动端支持
+            sticker.addEventListener("touchstart", (e) => {
+                if (!stickerEdit || e.target.classList.contains('sticker-handle') || 
+                    e.target.classList.contains('sticker-rotate-tip') || 
+                    e.target.classList.contains('sticker-flip-handle')) {
+                    return;
+                }
+                
+                isDragging = true;
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                
+                initialX = parseFloat(sticker.style.left) || 0;
+                initialY = parseFloat(sticker.style.top) || 0;
+                
+                sticker.style.zIndex = 901;
+                e.preventDefault();
+            });
+            
+            document.addEventListener("touchmove", (e) => {
+                if (!isDragging || !stickerEdit) return;
+                
+                const touch = e.touches[0];
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+                
+                sticker.style.left = `${initialX + dx}px`;
+                sticker.style.top = `${initialY + dy}px`;
+                e.preventDefault();
+            });
+            
+            document.addEventListener("touchend", () => {
+                isDragging = false;
+            });
+        }
+
+        // 初始化贴纸缩放
+        function initStickerResize(sticker) {
+            const handle = sticker.querySelector('.sticker-handle');
+            if (!handle) return;
+            
+            let isResizing = false;
+            let startX, startY;
+            let initialWidth, initialHeight;
+            
+            handle.addEventListener("mousedown", (e) => {
+                if (!stickerEdit) return;
+                
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                initialWidth = parseFloat(sticker.style.width) || 150;
+                initialHeight = parseFloat(sticker.style.height) || 150;
+                
+                // 提高层级
+                sticker.style.zIndex = 901;
+                
+                // 鼠标样式
+                document.body.style.cursor = "nwse-resize";
+                
+                e.preventDefault();
+            });
+            
+            document.addEventListener("mousemove", (e) => {
+                if (!isResizing || !stickerEdit) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                // 保持宽高比
+                const newWidth = Math.max(50, initialWidth + dx);
+                const aspectRatio = initialHeight / initialWidth;
+                const newHeight = newWidth * aspectRatio;
+                
+                sticker.style.width = `${newWidth}px`;
+                sticker.style.height = `${newHeight}px`;
+            });
+            
+            document.addEventListener("mouseup", () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.cursor = "default";
+                }
+            });
+            
+            // 移动端缩放支持
+            handle.addEventListener("touchstart", (e) => {
+                if (!stickerEdit) return;
+                
+                isResizing = true;
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                
+                initialWidth = parseFloat(sticker.style.width) || 150;
+                initialHeight = parseFloat(sticker.style.height) || 150;
+                
+                sticker.style.zIndex = 901;
+                e.preventDefault();
+            });
+            
+            document.addEventListener("touchmove", (e) => {
+                if (!isResizing || !stickerEdit) return;
+                
+                const touch = e.touches[0];
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+                
+                const newWidth = Math.max(50, initialWidth + dx);
+                const aspectRatio = initialHeight / initialWidth;
+                const newHeight = newWidth * aspectRatio;
+                
+                sticker.style.width = `${newWidth}px`;
+                sticker.style.height = `${newHeight}px`;
+                e.preventDefault();
+            });
+            
+            document.addEventListener("touchend", () => {
+                isResizing = false;
+            });
+        }
+
+        // 初始化贴纸旋转
+        function initStickerRotate(sticker) {
+            const rotateTip = sticker.querySelector('.sticker-rotate-tip');
+            if (!rotateTip) return;
+            
+            rotateTip.addEventListener("mousedown", startRotate);
+            rotateTip.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                startRotate(e);
+            });
+            
+            function startRotate(e) {
+                if (!stickerEdit) return;
+                
+                isRotating = true;
+                rotateSticker = sticker;
+                
+                // 获取初始旋转角度
+                const transform = sticker.style.transform || 'rotate(0deg)';
+                const rotateMatch = transform.match(/rotate\(([-+]?\d*\.?\d+)deg\)/);
+                rotateStartAngle = rotateMatch ? parseFloat(rotateMatch[1]) : 0;
+                
+                // 获取鼠标/触摸起始位置
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                // 计算贴纸中心位置
+                const rect = sticker.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                // 计算初始角度
+                rotateStartX = clientX;
+                rotateStartY = clientY;
+                
+                // 鼠标样式
+                document.body.style.cursor = "grab";
+                
+                e.preventDefault();
+            }
+            
+            // 旋转处理
+            function handleRotate(e) {
+                if (!isRotating || !rotateSticker || !stickerEdit) return;
+                
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                // 计算贴纸中心
+                const rect = rotateSticker.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                // 计算当前角度
+                const startAngle = Math.atan2(rotateStartY - centerY, rotateStartX - centerX);
+                const currentAngle = Math.atan2(clientY - centerY, clientX - centerX);
+                const angleDiff = (currentAngle - startAngle) * (180 / Math.PI);
+                
+                // 应用旋转
+                const newAngle = rotateStartAngle + angleDiff;
+                let transform = rotateSticker.style.transform || '';
+                
+                // 移除旧的旋转值
+                transform = transform.replace(/rotate\([-+]?\d*\.?\d+deg\)/g, '');
+                // 添加新的旋转值
+                transform += ` rotate(${newAngle}deg)`;
+                // 清理空格
+                transform = transform.trim().replace(/\s+/g, ' ');
+                
+                rotateSticker.style.transform = transform;
+                
+                e.preventDefault();
+            }
+            
+            // 结束旋转
+            function endRotate() {
+                if (isRotating) {
+                    isRotating = false;
+                    rotateSticker = null;
+                    document.body.style.cursor = "default";
+                }
+            }
+
+            // 初始化贴纸翻转菜单
+function initStickerFlipMenu(sticker) {
+    const flipHandle = sticker.querySelector('.sticker-flip-handle');
+    if (!flipHandle) return;
+    
+    // 创建翻转菜单（首次点击时生成）
+    let flipMenu = sticker.querySelector('.sticker-flip-menu');
+    if (!flipMenu) {
+        flipMenu = document.createElement('div');
+        flipMenu.className = 'sticker-flip-menu';
+        flipMenu.innerHTML = `
+            <div class="flip-option" data-direction="horizontal">↔️ 水平翻转</div>
+            <div class="flip-option" data-direction="vertical">↕️ 垂直翻转</div>
+        `;
+        sticker.appendChild(flipMenu);
+        
+        // 菜单选项点击事件
+        flipMenu.querySelectorAll('.flip-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const direction = option.dataset.direction;
+                flipSticker(sticker, direction);
+                flipMenu.style.display = 'none'; // 点击后关闭菜单
             });
         });
-
-        // 贴纸翻转快捷按钮
-        el("flipHorizontalBtn").addEventListener("click", () => {
-            if (!selectedSticker || !stickerEdit) {
-                alert("Please select a sticker first!");
-                return;
+    }
+    
+    // 点击翻转手柄显示/隐藏菜单
+    flipHandle.addEventListener('click', (e) => {
+        if (!stickerEdit) return;
+        e.stopPropagation();
+        
+        // 切换菜单显示状态
+        flipMenu.style.display = flipMenu.style.display === 'block' ? 'none' : 'block';
+        
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', function closeMenuHandler(ev) {
+            if (!sticker.contains(ev.target)) {
+                flipMenu.style.display = 'none';
+                document.removeEventListener('click', closeMenuHandler);
             }
+        }, { once: true });
+    });
+}
             
-            const currentTransform = selectedSticker.style.transform || '';
-            if (currentTransform.includes('scaleX(-1)')) {
-                selectedSticker.style.transform = currentTransform.replace(' scaleX(-1)', '').replace('scaleX(-1) ', '').replace('scaleX(-1)', '');
-            } else {
-                selectedSticker.style.transform = `${currentTransform} scaleX(-1)`;
-            }
-        });
-
-        el("flipVerticalBtn").addEventListener("click", () => {
-            if (!selectedSticker || !stickerEdit) {
-                alert("Please select a sticker first!");
-                return;
-            }
+            // 绑定旋转事件
+            document.addEventListener("mousemove", handleRotate);
+            document.addEventListener("touchmove", (e) => {
+                e.preventDefault();
+                handleRotate(e);
+            });
             
-            const currentTransform = selectedSticker.style.transform || '';
-            if (currentTransform.includes('scaleY(-1)')) {
-                selectedSticker.style.transform = currentTransform.replace(' scaleY(-1)', '').replace('scaleY(-1) ', '').replace('scaleY(-1)', '');
-            } else {
-                selectedSticker.style.transform = `${currentTransform} scaleY(-1)`;
-            }
-        });
+            document.addEventListener("mouseup", endRotate);
+            document.addEventListener("touchend", endRotate);
+        }
 
-        // 页面初始化
+        // 初始化页面
         window.addEventListener("DOMContentLoaded", () => {
-            // 从本地存储加载数据
-            loadAllDataFromLocalStorage();
-            
+            loadAllData();
             // 初始化目标列表
             renderTargets();
+            // 加载首页贴纸
+            loadPageStickers('home');
             
-            // 默认显示首页
-            navigateTo('home');
-            
-            // 监听页面卸载事件，保存数据
-            window.addEventListener('beforeunload', saveAllDataToLocalStorage);
-            
-            console.log("Yomi's World initialized successfully!");
+            // 点击空白处取消贴纸选中
+            document.addEventListener("click", (e) => {
+                if (stickerEdit && !e.target.closest('.sticker-item') && 
+                    !e.target.closest('.sticker-toolbar') && 
+                    e.target.id !== 'stickerButton') {
+                    els('.sticker-item').forEach(s => {
+                        s.style.outline = 'none';
+                    });
+                    selectedSticker = null;
+                }
+            });
         });
     </script>
 </body>
-</html>
+</html>   
+    
