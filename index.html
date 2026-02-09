@@ -1080,7 +1080,8 @@
                 container.appendChild(sticker);
                 initStickerDrag(sticker);
                 initStickerResize(sticker);
-                initStickerRotate(sticker); // 使用优化后的旋转函数
+                initStickerRotate(sticker);
+                initStickerFlipMenu(sticker);// 使用优化后的旋转函数
             });
         }
 
@@ -1133,39 +1134,40 @@
         });
 
         // 翻转功能实现
-        function flipSticker(sticker, direction) {
-            if (!sticker) return;
-            
-            // 获取当前transform样式
-            let currentTransform = sticker.style.transform || 'none';
-            
-            // 解析当前的scaleX和scaleY值
-                        let scaleY = 1;
-            const scaleXMatch = currentTransform.match(/scaleX\(([-+]?\d*\.?\d+)\)/);
-            const scaleYMatch = currentTransform.match(/scaleY\(([-+]?\d*\.?\d+)\)/);
-            
-            if (scaleXMatch) scaleX = parseFloat(scaleXMatch[1]);
-            if (scaleYMatch) scaleY = parseFloat(scaleYMatch[1]);
-            
-            // 根据方向设置翻转
-            if (direction === 'horizontal') {
-                scaleX = scaleX * -1;
-                // 移除旧的scaleX，添加新的
-                currentTransform = currentTransform.replace(/scaleX\([-+]?\d*\.?\d+\)/g, '');
-                currentTransform += ` scaleX(${scaleX})`;
-            } else if (direction === 'vertical') {
-                scaleY = scaleY * -1;
-                // 移除旧的scaleY，添加新的
-                currentTransform = currentTransform.replace(/scaleY\([-+]?\d*\.?\d+\)/g, '');
-                currentTransform += ` scaleY(${scaleY})`;
-            }
-            
-            // 清理多余空格和开头/结尾的空格
-            currentTransform = currentTransform.trim().replace(/\s+/g, ' ');
-            if (currentTransform === '') currentTransform = 'none';
-            
-            sticker.style.transform = currentTransform;
-        }
+function flipSticker(sticker, direction) {
+    if (!sticker) return;
+    
+    // 获取当前transform样式
+    let currentTransform = sticker.style.transform || 'none';
+    
+    // 解析当前的scaleX和scaleY值（修复变量初始化bug）
+    let scaleX = 1; // 修复：补充初始化scaleX
+    let scaleY = 1;
+    const scaleXMatch = currentTransform.match(/scaleX\(([-+]?\d*\.?\d+)\)/);
+    const scaleYMatch = currentTransform.match(/scaleY\(([-+]?\d*\.?\d+)\)/);
+    
+    if (scaleXMatch) scaleX = parseFloat(scaleXMatch[1]);
+    if (scaleYMatch) scaleY = parseFloat(scaleYMatch[1]);
+    
+    // 根据方向设置翻转
+    if (direction === 'horizontal') {
+        scaleX = scaleX * -1;
+        // 移除旧的scaleX，添加新的
+        currentTransform = currentTransform.replace(/scaleX\([-+]?\d*\.?\d+\)/g, '');
+        currentTransform += ` scaleX(${scaleX})`;
+    } else if (direction === 'vertical') {
+        scaleY = scaleY * -1;
+        // 移除旧的scaleY，添加新的
+        currentTransform = currentTransform.replace(/scaleY\([-+]?\d*\.?\d+\)/g, '');
+        currentTransform += ` scaleY(${scaleY})`;
+    }
+    
+    // 清理多余空格和开头/结尾的空格
+    currentTransform = currentTransform.trim().replace(/\s+/g, ' ');
+    if (currentTransform === '') currentTransform = 'none';
+    
+    sticker.style.transform = currentTransform;
+}
 
         // 绑定水平翻转按钮
         el("flipHorizontalBtn").addEventListener("click", () => {
@@ -1290,6 +1292,7 @@
             initStickerDrag(sticker);
             initStickerResize(sticker);
             initStickerRotate(sticker);
+            initStickerFlipMenu(sticker);
             
             // 默认选中新添加的贴纸
             selectedSticker = sticker;
@@ -1549,6 +1552,51 @@
                     document.body.style.cursor = "default";
                 }
             }
+
+            // 初始化贴纸翻转菜单
+function initStickerFlipMenu(sticker) {
+    const flipHandle = sticker.querySelector('.sticker-flip-handle');
+    if (!flipHandle) return;
+    
+    // 创建翻转菜单（首次点击时生成）
+    let flipMenu = sticker.querySelector('.sticker-flip-menu');
+    if (!flipMenu) {
+        flipMenu = document.createElement('div');
+        flipMenu.className = 'sticker-flip-menu';
+        flipMenu.innerHTML = `
+            <div class="flip-option" data-direction="horizontal">↔️ 水平翻转</div>
+            <div class="flip-option" data-direction="vertical">↕️ 垂直翻转</div>
+        `;
+        sticker.appendChild(flipMenu);
+        
+        // 菜单选项点击事件
+        flipMenu.querySelectorAll('.flip-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const direction = option.dataset.direction;
+                flipSticker(sticker, direction);
+                flipMenu.style.display = 'none'; // 点击后关闭菜单
+            });
+        });
+    }
+    
+    // 点击翻转手柄显示/隐藏菜单
+    flipHandle.addEventListener('click', (e) => {
+        if (!stickerEdit) return;
+        e.stopPropagation();
+        
+        // 切换菜单显示状态
+        flipMenu.style.display = flipMenu.style.display === 'block' ? 'none' : 'block';
+        
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', function closeMenuHandler(ev) {
+            if (!sticker.contains(ev.target)) {
+                flipMenu.style.display = 'none';
+                document.removeEventListener('click', closeMenuHandler);
+            }
+        }, { once: true });
+    });
+}
             
             // 绑定旋转事件
             document.addEventListener("mousemove", handleRotate);
