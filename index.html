@@ -1766,11 +1766,6 @@ function initStickerFlipMenu(sticker) {
             loadAllData();
             navigateTo("home");
         });
-
-        window.addEventListener("beforeunload", (e) => {
-            if (isAdmin) saveAllData();
-        });
-            loadAllData();
             // 初始化目标列表
             renderTargets();
             // 加载首页贴纸
