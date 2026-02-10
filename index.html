@@ -415,6 +415,18 @@
                         textColor: "#5a2e48",
                         font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
                     };
+                    
+                    // 数据迁移：将旧格式的文件夹内容转换为新格式
+                    Object.keys(folderContents).forEach(folderId => {
+                        const content = folderContents[folderId];
+                        // 如果是数组格式（旧格式），转换为对象格式（新格式）
+                        if (Array.isArray(content)) {
+                            folderContents[folderId] = {
+                                section: "study", // 默认板块，实际使用时会根据文件夹ID判断
+                                files: content
+                            };
+                        }
+                    });
                 } catch (e) {
                     console.error('加载本地数据失败:', e);
                 }
@@ -432,9 +444,8 @@
                 
                 // 找出该分类下的所有文件夹ID
                 const folderIds = Object.keys(folderNames).filter(folderId => {
-                    // 检查文件夹是否属于当前分类（通过创建时的上下文）
-                    // 这里简化处理：重新渲染所有文件夹到对应的位置
-                    return true;
+                    // 检查文件夹是否属于当前分类
+                    return folderContents[folderId] && folderContents[folderId].section === section;
                 });
                 
                 folderIds.forEach(folderId => {
@@ -471,8 +482,8 @@
                         e.stopPropagation();
                         if (!isAdmin) return;
                         if (confirm(`Are you sure to delete the folder "${nameEl.textContent}"?\nAll contents inside will also be deleted.`)) {
-                            if (folderContents[folderId]) {
-                                folderContents[folderId].forEach(file => {
+                            if (folderContents[folderId] && folderContents[folderId].files) {
+                                folderContents[folderId].files.forEach(file => {
                                     if (file.url && file.url.startsWith('blob:')) URL.revokeObjectURL(file.url);
                                 });
                             }
@@ -753,7 +764,11 @@
             
             const preview = el("folderIconPreview").innerHTML;
             folderIcons[folderId] = preview.includes('img src=') ? preview.match(/src="(.*?)"/)[1] : "https://via.placeholder.com/70/ff66b3/ffffff?text=📁";
-            folderContents[folderId] = [];
+            // 新增：创建文件夹时包含所属板块信息
+            folderContents[folderId] = {
+                section: currMedia,
+                files: []
+            };
 
             // 创建文件夹元素
             const folder = document.createElement("div");
@@ -840,9 +855,9 @@
         // 渲染文件夹内容
         function renderFolderMedia(folderId) {
             el("folderMediaContent").innerHTML = "";
-            if (!folderContents[folderId]) return;
+            if (!folderContents[folderId] || !folderContents[folderId].files) return;
             
-            folderContents[folderId].forEach((file, idx) => {
+            folderContents[folderId].files.forEach((file, idx) => {
                 const fileEl = document.createElement("div");
                 fileEl.className = "file-item";
                 fileEl.dataset.index = idx;
@@ -876,7 +891,7 @@
                     if (!isAdmin) return;
                     const newName = fileNameEl.textContent.trim() || file.originalName;
                     fileNameEl.textContent = newName;
-                    folderContents[folderId][idx].name = newName;
+                    folderContents[folderId].files[idx].name = newName;
                     saveAllData(); // 保存修改
                 });
 
@@ -886,7 +901,7 @@
                     if (!isAdmin) return;
                     if (confirm(`Are you sure to delete "${fileNameEl.textContent}"?`)) {
                         if (file.url && file.url.startsWith('blob:')) URL.revokeObjectURL(file.url);
-                        folderContents[folderId].splice(idx, 1);
+                        folderContents[folderId].files.splice(idx, 1);
                         renderFolderMedia(folderId);
                         saveAllData(); // 保存修改
                     }
@@ -923,11 +938,12 @@
                 const files = e.target.files;
                 if (!files.length || !currFolder) return;
 
-                if (!folderContents[currFolder]) folderContents[currFolder] = [];
+                if (!folderContents[currFolder]) folderContents[currFolder] = { section: currMedia, files: [] };
+                if (!folderContents[currFolder].files) folderContents[currFolder].files = [];
 
                 for (let file of files) {
                     const url = URL.createObjectURL(file);
-                    folderContents[currFolder].push({
+                    folderContents[currFolder].files.push({
                         name: file.name,
                         originalName: file.name,
                         type: file.type,
@@ -1135,7 +1151,7 @@
             el("targetOverlay").style.display = "block";
             
             if (year) {
-                                const yearTargets = targets.filter(t => t.year === year);
+                const yearTargets = targets.filter(t => t.year === year);
                 el("targetYear").value = year;
                 el("targetContent").value = yearTargets.map(t => t.content).join("\n");
                 editTargetId = year;
@@ -1271,7 +1287,7 @@
                 initStickerDrag(sticker);
                 initStickerResize(sticker);
                 initStickerRotate(sticker);
-                initStickerFlipMenu(sticker);// 使用优化后的旋转函数
+                initStickerFlipMenu(sticker);
             });
         }
 
@@ -1324,40 +1340,40 @@
         });
 
         // 翻转功能实现
-function flipSticker(sticker, direction) {
-    if (!sticker) return;
-    
-    // 获取当前transform样式
-    let currentTransform = sticker.style.transform || 'none';
-    
-    // 解析当前的scaleX和scaleY值（修复变量初始化bug）
-    let scaleX = 1; // 修复：补充初始化scaleX
-    let scaleY = 1;
-    const scaleXMatch = currentTransform.match(/scaleX\(([-+]?\d*\.?\d+)\)/);
-    const scaleYMatch = currentTransform.match(/scaleY\(([-+]?\d*\.?\d+)\)/);
-    
-    if (scaleXMatch) scaleX = parseFloat(scaleXMatch[1]);
-    if (scaleYMatch) scaleY = parseFloat(scaleYMatch[1]);
-    
-    // 根据方向设置翻转
-    if (direction === 'horizontal') {
-        scaleX = scaleX * -1;
-        // 移除旧的scaleX，添加新的
-        currentTransform = currentTransform.replace(/scaleX\([-+]?\d*\.?\d+\)/g, '');
-        currentTransform += ` scaleX(${scaleX})`;
-    } else if (direction === 'vertical') {
-        scaleY = scaleY * -1;
-        // 移除旧的scaleY，添加新的
-        currentTransform = currentTransform.replace(/scaleY\([-+]?\d*\.?\d+\)/g, '');
-        currentTransform += ` scaleY(${scaleY})`;
-    }
-    
-    // 清理多余空格和开头/结尾的空格
-    currentTransform = currentTransform.trim().replace(/\s+/g, ' ');
-    if (currentTransform === '') currentTransform = 'none';
-    
-    sticker.style.transform = currentTransform;
-}
+        function flipSticker(sticker, direction) {
+            if (!sticker) return;
+            
+            // 获取当前transform样式
+            let currentTransform = sticker.style.transform || 'none';
+            
+            // 解析当前的scaleX和scaleY值
+            let scaleX = 1;
+            let scaleY = 1;
+            const scaleXMatch = currentTransform.match(/scaleX\(([-+]?\d*\.?\d+)\)/);
+            const scaleYMatch = currentTransform.match(/scaleY\(([-+]?\d*\.?\d+)\)/);
+            
+            if (scaleXMatch) scaleX = parseFloat(scaleXMatch[1]);
+            if (scaleYMatch) scaleY = parseFloat(scaleYMatch[1]);
+            
+            // 根据方向设置翻转
+            if (direction === 'horizontal') {
+                scaleX = scaleX * -1;
+                // 移除旧的scaleX，添加新的
+                currentTransform = currentTransform.replace(/scaleX\([-+]?\d*\.?\d+\)/g, '');
+                currentTransform += ` scaleX(${scaleX})`;
+            } else if (direction === 'vertical') {
+                scaleY = scaleY * -1;
+                // 移除旧的scaleY，添加新的
+                currentTransform = currentTransform.replace(/scaleY\([-+]?\d*\.?\d+\)/g, '');
+                currentTransform += ` scaleY(${scaleY})`;
+            }
+            
+            // 清理多余空格和开头/结尾的空格
+            currentTransform = currentTransform.trim().replace(/\s+/g, ' ');
+            if (currentTransform === '') currentTransform = 'none';
+            
+            sticker.style.transform = currentTransform;
+        }
 
         // 绑定水平翻转按钮
         el("flipHorizontalBtn").addEventListener("click", () => {
@@ -1742,51 +1758,6 @@ function flipSticker(sticker, direction) {
                     document.body.style.cursor = "default";
                 }
             }
-
-            // 初始化贴纸翻转菜单
-function initStickerFlipMenu(sticker) {
-    const flipHandle = sticker.querySelector('.sticker-flip-handle');
-    if (!flipHandle) return;
-    
-    // 创建翻转菜单（首次点击时生成）
-    let flipMenu = sticker.querySelector('.sticker-flip-menu');
-    if (!flipMenu) {
-        flipMenu = document.createElement('div');
-        flipMenu.className = 'sticker-flip-menu';
-        flipMenu.innerHTML = `
-            <div class="flip-option" data-direction="horizontal">↔️ 水平翻转</div>
-            <div class="flip-option" data-direction="vertical">↕️ 垂直翻转</div>
-        `;
-        sticker.appendChild(flipMenu);
-        
-        // 菜单选项点击事件
-        flipMenu.querySelectorAll('.flip-option').forEach(option => {
-            option.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const direction = option.dataset.direction;
-                flipSticker(sticker, direction);
-                flipMenu.style.display = 'none'; // 点击后关闭菜单
-            });
-        });
-    }
-    
-    // 点击翻转手柄显示/隐藏菜单
-    flipHandle.addEventListener('click', (e) => {
-        if (!stickerEdit) return;
-        e.stopPropagation();
-        
-        // 切换菜单显示状态
-        flipMenu.style.display = flipMenu.style.display === 'block' ? 'none' : 'block';
-        
-        // 点击其他地方关闭菜单
-        document.addEventListener('click', function closeMenuHandler(ev) {
-            if (!sticker.contains(ev.target)) {
-                flipMenu.style.display = 'none';
-                document.removeEventListener('click', closeMenuHandler);
-            }
-        }, { once: true });
-    });
-}
             
             // 绑定旋转事件
             document.addEventListener("mousemove", handleRotate);
@@ -1799,11 +1770,62 @@ function initStickerFlipMenu(sticker) {
             document.addEventListener("touchend", endRotate);
         }
 
+        // 初始化贴纸翻转菜单
+        function initStickerFlipMenu(sticker) {
+            const flipHandle = sticker.querySelector('.sticker-flip-handle');
+            if (!flipHandle) return;
+            
+            // 创建翻转菜单（首次点击时生成）
+            let flipMenu = sticker.querySelector('.sticker-flip-menu');
+            if (!flipMenu) {
+                flipMenu = document.createElement('div');
+                flipMenu.className = 'sticker-flip-menu';
+                flipMenu.innerHTML = `
+                    <div class="flip-option" data-direction="horizontal">↔️ 水平翻转</div>
+                    <div class="flip-option" data-direction="vertical">↕️ 垂直翻转</div>
+                `;
+                sticker.appendChild(flipMenu);
+                
+                // 菜单选项点击事件
+                flipMenu.querySelectorAll('.flip-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const direction = option.dataset.direction;
+                        flipSticker(sticker, direction);
+                        flipMenu.style.display = 'none'; // 点击后关闭菜单
+                    });
+                });
+            }
+            
+            // 点击翻转手柄显示/隐藏菜单
+            flipHandle.addEventListener('click', (e) => {
+                if (!stickerEdit) return;
+                e.stopPropagation();
+                
+                // 切换菜单显示状态
+                flipMenu.style.display = flipMenu.style.display === 'block' ? 'none' : 'block';
+                
+                // 点击其他地方关闭菜单
+                document.addEventListener('click', function closeMenuHandler(ev) {
+                    if (!sticker.contains(ev.target)) {
+                        flipMenu.style.display = 'none';
+                        document.removeEventListener('click', closeMenuHandler);
+                    }
+                }, { once: true });
+            });
+        }
+
         // 初始化页面
         window.addEventListener("DOMContentLoaded", () => {
-            // 初始化目标列表
+            // 加载本地存储数据
+            loadAllData();
+            
+            // 渲染初始内容
+            renderAllFolders();
             renderTargets();
-            // 加载首页贴纸
+            renderProfileData();
+            
+            // 默认显示首页贴纸
             loadPageStickers('home');
             
             // 点击空白处取消贴纸选中
@@ -1839,33 +1861,9 @@ function initStickerFlipMenu(sticker) {
         el("profileFont").addEventListener("change", () => {
             el("profileInfo").style.fontFamily = el("profileFont").value;
         });
-
-        // ========== 页面初始化 ==========
-        window.addEventListener("DOMContentLoaded", () => {
-            // 加载本地存储数据
-            loadAllData();
-            
-            // 渲染初始内容
-            renderAllFolders();
-            renderTargets();
-            renderProfileData();
-            
-            // 默认显示首页贴纸
-            loadPageStickers('home');
-            
-            // 全局点击事件：关闭贴纸工具栏（点击非工具栏区域）
-            document.addEventListener("click", (e) => {
-                const toolbar = el("stickerToolbar");
-                const stickerBtn = el("stickerButton");
-                
-                if (stickerEdit && !toolbar.contains(e.target) && e.target !== stickerBtn) {
-                    toolbar.style.display = "none";
-                }
-            });
-        });
     </script>
 </body>
-</html>  
+</html>
     
         
    
