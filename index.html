@@ -131,6 +131,46 @@
             .home-page { flex-direction: column; text-align: center; }
             .cartoon-img { margin: 0 auto 2rem; }
         }
+        
+        /* 移动端优化 */
+        @media (max-width: 640px) {
+            .sidebar { width: 150px; padding: 20px 10px; }
+            .sidebar h2 { font-size: 18px; margin-bottom: 20px; }
+            .sidebar-btn { padding: 10px 12px; font-size: 13px; }
+            .main-content { margin-left: 150px; padding: 15px; }
+            .page-title { font-size: 22px; margin-bottom: 20px; }
+            .content-section { padding: 20px; }
+            .section-title { font-size: 18px; }
+            .media-section { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; padding: 0.8rem; }
+            .folder-item, .file-item { height: 140px; padding: 0.8rem; }
+            .folder-icon, .file-icon { width: 60px; height: 60px; margin-bottom: 0.6rem; }
+            .folder-name, .file-name { font-size: 12px; }
+            .cartoon-img { width: 250px; height: 250px; }
+            .profile-card { padding: 20px; max-width: 100%; }
+            .profile-card h1 { font-size: 24px; }
+            .login-modal, .create-folder-modal, .target-modal, .folder-page-modal, .sticker-confirm-modal, .achievement-image-modal, .delete-sticker-modal { width: 95%; padding: 1.5rem; }
+            .add-target-btn { position: static; margin-top: 10px; width: 100%; }
+            .year-target-container { padding: 12px; }
+            .year-header { font-size: 16px; }
+            .goals-list { margin-left: 20px; }
+            .goal-item { padding: 6px; }
+            .target-actions { margin-left: 20px; }
+            .sticker-button { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 20px; }
+            .sticker-toolbar { bottom: 80px; right: 20px; padding: 8px; }
+            .sticker-tool-btn { padding: 4px 8px; font-size: 11px; margin: 3px; }
+        }
+        
+        /* 超小屏幕优化 */
+        @media (max-width: 480px) {
+            .sidebar { width: 130px; }
+            .sidebar h2 { font-size: 16px; }
+            .sidebar-btn { padding: 8px 10px; font-size: 12px; }
+            .main-content { margin-left: 130px; padding: 10px; }
+            .media-section { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+            .folder-item, .file-item { height: 120px; padding: 0.6rem; }
+            .folder-icon, .file-icon { width: 50px; height: 50px; }
+            .cartoon-img { width: 200px; height: 200px; }
+        }
     </style>
 </head>
 <body>
@@ -427,8 +467,35 @@
                             };
                         }
                     });
+                    
+                    // 清理无效的贴纸数据（URL为空或无效的贴纸）
+                    Object.keys(pageStickers).forEach(pageId => {
+                        pageStickers[pageId] = pageStickers[pageId].filter(sticker => {
+                            return sticker && sticker.url && sticker.url.trim() !== "";
+                        });
+                    });
                 } catch (e) {
                     console.error('加载本地数据失败:', e);
+                    // 如果解析失败，重置所有数据
+                    folderIcons = {};
+                    folderNames = {};
+                    folderContents = {};
+                    targets = [];
+                    idCounter = 1;
+                    pageStickers = {
+                        home: [],
+                        study: [],
+                        vlog: [],
+                        week: [],
+                        achieve: [],
+                        target: []
+                    };
+                    profileData = {
+                        image: "",
+                        info: "",
+                        textColor: "#5a2e48",
+                        font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
+                    };
                 }
             }
         }
@@ -1433,14 +1500,18 @@
         // 添加贴纸
         function addSticker(file) {
             const container = el(`stickerContainer_${currentPageId}`);
-            const url = URL.createObjectURL(file);
             const stickerId = `sticker_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+            
+            // 读取文件为Base64格式以确保跨设备兼容性
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Url = e.target.result;
             
             const sticker = document.createElement("div");
             sticker.className = "sticker-item editable";
             sticker.dataset.stickerId = stickerId;
             sticker.dataset.type = file.type;
-            sticker.dataset.url = url;
+            sticker.dataset.url = base64Url;
             
             // 初始位置和大小
             const startX = 50 + Math.random() * (container.clientWidth - 200);
@@ -1454,14 +1525,14 @@
             // 根据文件类型创建内容
             if (file.type.startsWith("image/")) {
                 sticker.innerHTML = `
-                    <img src="${url}" style="width: 100%; height: 100%; object-fit: contain;">
+                    <img src="${base64Url}" style="width: 100%; height: 100%; object-fit: contain;">
                     <div class="sticker-handle"></div>
                     <div class="sticker-rotate-tip">↺</div>
                     <div class="sticker-flip-handle">🔄</div>
                 `;
             } else if (file.type.startsWith("video/")) {
                 sticker.innerHTML = `
-                    <video src="${url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
+                    <video src="${base64Url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
                     <div class="sticker-handle"></div>
                     <div class="sticker-rotate-tip">↺</div>
                     <div class="sticker-flip-handle">🔄</div>
@@ -1503,6 +1574,10 @@
             // 默认选中新添加的贴纸
             selectedSticker = sticker;
             sticker.style.outline = '2px solid #ff66b3';
+            };
+            
+            // 开始读取文件
+            reader.readAsDataURL(file);
         }
 
         // 初始化贴纸拖拽
