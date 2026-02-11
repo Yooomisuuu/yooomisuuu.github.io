@@ -1008,15 +1008,27 @@
                 if (!folderContents[currFolder]) folderContents[currFolder] = { section: currMedia, files: [] };
                 if (!folderContents[currFolder].files) folderContents[currFolder].files = [];
 
+                let processedCount = 0;
+                
                 for (let file of files) {
-                    const url = URL.createObjectURL(file);
-                    folderContents[currFolder].files.push({
-                        name: file.name,
-                        originalName: file.name,
-                        type: file.type,
-                        url: url,
-                        isNew: true
-                    });
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const base64Url = ev.target.result;
+                        folderContents[currFolder].files.push({
+                            name: file.name,
+                            originalName: file.name,
+                            type: file.type,
+                            url: base64Url,
+                            isNew: true
+                        });
+                        
+                        processedCount++;
+                        if (processedCount === files.length) {
+                            renderFolderMedia(currFolder);
+                            saveAllData();
+                        }
+                    };
+                    reader.readAsDataURL(file);
                 }
 
                 renderFolderMedia(currFolder);
@@ -1926,7 +1938,13 @@
             input.onchange = (e) => {
                 const f = e.target.files[0];
                 if (!f) return;
-                el("profileImage").src = URL.createObjectURL(f);
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    el("profileImage").src = ev.target.result;
+                    profileData.image = ev.target.result;
+                    saveAllData();
+                };
+                reader.readAsDataURL(f);
             };
         });
 
