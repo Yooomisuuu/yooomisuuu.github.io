@@ -500,6 +500,24 @@
             }
         }
 
+        // 关键修复：确保贴纸容器正确显示
+        function ensureStickerContainers() {
+            const pages = ['home', 'study', 'vlog', 'week', 'achieve', 'target'];
+            pages.forEach(pageId => {
+                const container = document.getElementById(`stickerContainer_${pageId}`);
+                if (container) {
+                    // 确保贴纸容器有正确的样式
+                    container.style.position = 'absolute';
+                    container.style.top = '0';
+                    container.style.left = '0';
+                    container.style.width = '100%';
+                    container.style.height = '100%';
+                    container.style.pointerEvents = 'none';
+                    container.style.zIndex = '800';
+                }
+            });
+        }
+
         // 渲染所有保存的文件夹
         function renderAllFolders() {
             // 渲染每个分类的文件夹
@@ -659,7 +677,12 @@
             // 显示/隐藏贴纸按钮（管理员模式下）
             if (isAdmin) {
                 document.getElementById('stickerButton').style.display = 'flex';
+            } else {
+                document.getElementById('stickerButton').style.display = 'none';
             }
+            
+            // 确保贴纸容器正确显示
+            ensureStickerContainers();
             
             // 加载当前页面的贴纸
             loadPageStickers(pageId);
@@ -737,6 +760,9 @@
                     el.contentEditable = true;
                     el.style.cursor = "text";
                 });
+                
+                // 重新加载当前页面贴纸，确保正确显示
+                loadPageStickers(currentPageId);
                 
                 alert("✨ Edit mode begin! You can now create folders and manage content.");
             } else {
@@ -1008,27 +1034,15 @@
                 if (!folderContents[currFolder]) folderContents[currFolder] = { section: currMedia, files: [] };
                 if (!folderContents[currFolder].files) folderContents[currFolder].files = [];
 
-                let processedCount = 0;
-                
                 for (let file of files) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        const base64Url = ev.target.result;
-                        folderContents[currFolder].files.push({
-                            name: file.name,
-                            originalName: file.name,
-                            type: file.type,
-                            url: base64Url,
-                            isNew: true
-                        });
-                        
-                        processedCount++;
-                        if (processedCount === files.length) {
-                            renderFolderMedia(currFolder);
-                            saveAllData();
-                        }
-                    };
-                    reader.readAsDataURL(file);
+                    const url = URL.createObjectURL(file);
+                    folderContents[currFolder].files.push({
+                        name: file.name,
+                        originalName: file.name,
+                        type: file.type,
+                        url: url,
+                        isNew: true
+                    });
                 }
 
                 renderFolderMedia(currFolder);
@@ -1307,31 +1321,51 @@
         // 加载指定页面的贴纸
         function loadPageStickers(pageId) {
             const container = el(`stickerContainer_${pageId}`);
+            if (!container) return;
+            
             container.innerHTML = "";
             
             const stickers = pageStickers[pageId] || [];
             stickers.forEach(stickerData => {
+                // 验证贴纸数据的完整性
+                if (!stickerData || !stickerData.id || !stickerData.url) {
+                    console.warn('Invalid sticker data:', stickerData);
+                    return;
+                }
+                
                 const sticker = document.createElement("div");
                 sticker.className = "sticker-item";
                 sticker.dataset.stickerId = stickerData.id;
-                sticker.dataset.type = stickerData.type;
+                sticker.dataset.type = stickerData.type || 'image/png';
                 sticker.dataset.url = stickerData.url;
-                sticker.style.top = stickerData.top;
-                sticker.style.left = stickerData.left;
-                sticker.style.width = stickerData.width;
-                sticker.style.height = stickerData.height;
-                sticker.style.transform = stickerData.transform;
+                sticker.style.top = stickerData.top || '50px';
+                sticker.style.left = stickerData.left || '50px';
+                sticker.style.width = stickerData.width || '150px';
+                sticker.style.height = stickerData.height || '150px';
+                sticker.style.transform = stickerData.transform || 'rotate(0deg)';
                 
-                if (stickerData.type.startsWith("image/")) {
+                // 确保贴纸有正确的定位
+                sticker.style.position = 'absolute';
+                sticker.style.pointerEvents = isAdmin && stickerEdit ? 'all' : 'auto';
+                
+                if (stickerData.type && stickerData.type.startsWith("image/")) {
                     sticker.innerHTML = `
                         <img src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;">
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
                     `;
-                } else if (stickerData.type.startsWith("video/")) {
+                } else if (stickerData.type && stickerData.type.startsWith("video/")) {
                     sticker.innerHTML = `
                         <video src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
+                        <div class="sticker-handle"></div>
+                        <div class="sticker-rotate-tip">↺</div>
+                        <div class="sticker-flip-handle">🔄</div>
+                    `;
+                } else {
+                    // 默认显示为图片
+                    sticker.innerHTML = `
+                        <img src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;">
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
@@ -1357,16 +1391,25 @@
                 sticker.addEventListener("dblclick", (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    currentDeleteSticker = sticker;
-                    el("deleteStickerModal").style.display = "block";
-                    el("deleteStickerOverlay").style.display = "block";
+                    if (isAdmin) {
+                        currentDeleteSticker = sticker;
+                        el("deleteStickerModal").style.display = "block";
+                        el("deleteStickerOverlay").style.display = "block";
+                    }
                 });
                 
                 container.appendChild(sticker);
+                
+                // 初始化贴纸交互功能
                 initStickerDrag(sticker);
                 initStickerResize(sticker);
                 initStickerRotate(sticker);
                 initStickerFlipMenu(sticker);
+                
+                // 如果在编辑模式，添加editable类
+                if (isAdmin && stickerEdit) {
+                    sticker.classList.add('editable');
+                }
             });
         }
 
@@ -1907,6 +1950,9 @@
             // 加载本地存储数据
             loadAllData();
             
+            // 确保贴纸容器正确显示
+            ensureStickerContainers();
+            
             // 渲染初始内容
             renderAllFolders();
             renderTargets();
@@ -1914,6 +1960,11 @@
             
             // 默认显示首页贴纸
             loadPageStickers('home');
+            
+            // 确保贴纸按钮初始状态正确
+            if (!isAdmin) {
+                document.getElementById('stickerButton').style.display = 'none';
+            }
             
             // 点击空白处取消贴纸选中
             document.addEventListener("click", (e) => {
@@ -1938,13 +1989,7 @@
             input.onchange = (e) => {
                 const f = e.target.files[0];
                 if (!f) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    el("profileImage").src = ev.target.result;
-                    profileData.image = ev.target.result;
-                    saveAllData();
-                };
-                reader.readAsDataURL(f);
+                el("profileImage").src = URL.createObjectURL(f);
             };
         });
 
@@ -1957,7 +2002,3 @@
     </script>
 </body>
 </html>
-    
-        
-   
-        
