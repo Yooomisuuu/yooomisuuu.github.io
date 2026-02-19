@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦭</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -170,6 +174,52 @@
             .folder-item, .file-item { height: 120px; padding: 0.6rem; }
             .folder-icon, .file-icon { width: 50px; height: 50px; }
             .cartoon-img { width: 200px; height: 200px; }
+        }
+        
+        /* 同步状态指示器 */
+        .sync-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(255, 102, 179, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+        
+        .sync-status.idle {
+            background: #fff8fc;
+            color: #ff99cc;
+        }
+        
+        .sync-status.syncing {
+            background: #fff0f7;
+            color: #ff66b3;
+        }
+        
+        .sync-status.synced {
+            background: #f0fff4;
+            color: #4caf50;
+        }
+        
+        .sync-status.error {
+            background: #fff0f0;
+            color: #ff6666;
+        }
+        
+        .sync-status i {
+            font-size: 14px;
+        }
+        
+        .sync-status:hover {
+            transform: scale(1.05);
+            cursor: pointer;
         }
     </style>
 </head>
@@ -402,6 +452,26 @@
             font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
         };
         
+        // ========== Firebase配置和同步相关变量 ==========
+        // Firebase配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9z5Y4WgJvKdQ8X3Z7h9L2M1N6O5P4R3T",
+            authDomain: "yomis-world.firebaseapp.com",
+            databaseURL: "https://yomis-world-default-rtdb.firebaseio.com",
+            projectId: "yomis-world",
+            storageBucket: "yomis-world.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef1234567890"
+        };
+        
+        // 同步相关变量
+        let isOnline = navigator.onLine;
+        let syncStatus = 'idle';
+        let syncStatusElement = null;
+        let dataRef = null;
+        let isDataLoaded = false;
+        let userId = null;
+        
         // 新增：旋转状态变量
         let isRotating = false;
         let rotateStartX, rotateStartY, rotateStartAngle = 0;
@@ -415,8 +485,34 @@
             "Every small step leads to big achievements! 🚀", "Consistency is key, and you nailed it! 🗝️"
         ];
 
-        // ========== 本地存储功能 ==========
-        // 保存所有数据到localStorage
+        // ========== 数据同步功能 ==========
+        // 初始化Firebase
+        function initFirebase() {
+            return new Promise((resolve, reject) => {
+                try {
+                    // 初始化Firebase应用
+                    const app = firebase.initializeApp(firebaseConfig);
+                    
+                    // 获取匿名用户ID
+                    firebase.auth().signInAnonymously().then((userCredential) => {
+                        userId = userCredential.user.uid;
+                        console.log('匿名用户登录成功，用户ID:', userId);
+                        
+                        // 获取数据库引用
+                        dataRef = firebase.database().ref(`users/${userId}/data`);
+                        resolve();
+                    }).catch((error) => {
+                        console.error('匿名用户登录失败:', error);
+                        reject(error);
+                    });
+                } catch (error) {
+                    console.error('Firebase初始化失败:', error);
+                    reject(error);
+                }
+            });
+        }
+
+        // 保存所有数据到localStorage和Firebase
         function saveAllData() {
             const data = {
                 folderIcons,
@@ -425,96 +521,352 @@
                 targets,
                 idCounter,
                 pageStickers,
-                profileData
+                profileData,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
             };
+            
+            // 保存到本地存储
             localStorage.setItem('yomisWorldData', JSON.stringify(data));
-        }
-
-        // 从localStorage加载所有数据
-        function loadAllData() {
-            const savedData = localStorage.getItem('yomisWorldData');
-            if (savedData) {
-                try {
-                    const data = JSON.parse(savedData);
-                    folderIcons = data.folderIcons || {};
-                    folderNames = data.folderNames || {};
-                    folderContents = data.folderContents || {};
-                    targets = data.targets || [];
-                    idCounter = data.idCounter || 1;
-                    pageStickers = data.pageStickers || {
-                        home: [],
-                        study: [],
-                        vlog: [],
-                        week: [],
-                        achieve: [],
-                        target: []
-                    };
-                    profileData = data.profileData || {
-                        image: "",
-                        info: "",
-                        textColor: "#5a2e48",
-                        font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
-                    };
-                    
-                    // 数据迁移：将旧格式的文件夹内容转换为新格式
-                    Object.keys(folderContents).forEach(folderId => {
-                        const content = folderContents[folderId];
-                        // 如果是数组格式（旧格式），转换为对象格式（新格式）
-                        if (Array.isArray(content)) {
-                            folderContents[folderId] = {
-                                section: "study", // 默认板块，实际使用时会根据文件夹ID判断
-                                files: content
-                            };
-                        }
-                    });
-                    
-                    // 清理无效的贴纸数据（URL为空或无效的贴纸）
-                    Object.keys(pageStickers).forEach(pageId => {
-                        pageStickers[pageId] = pageStickers[pageId].filter(sticker => {
-                            return sticker && sticker.url && sticker.url.trim() !== "";
-                        });
-                    });
-                } catch (e) {
-                    console.error('加载本地数据失败:', e);
-                    // 如果解析失败，重置所有数据
-                    folderIcons = {};
-                    folderNames = {};
-                    folderContents = {};
-                    targets = [];
-                    idCounter = 1;
-                    pageStickers = {
-                        home: [],
-                        study: [],
-                        vlog: [],
-                        week: [],
-                        achieve: [],
-                        target: []
-                    };
-                    profileData = {
-                        image: "",
-                        info: "",
-                        textColor: "#5a2e48",
-                        font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
-                    };
+            
+            // 如果在线且Firebase已初始化，保存到Firebase
+            if (isOnline && dataRef) {
+                updateSyncStatus('syncing');
+                dataRef.set(data).then(() => {
+                    console.log('数据已成功保存到Firebase');
+                    updateSyncStatus('synced');
+                }).catch((error) => {
+                    console.error('保存数据到Firebase失败:', error);
+                    updateSyncStatus('error');
+                });
+            } else {
+                console.log('当前离线或Firebase未初始化，数据已保存到本地，将在网络恢复后同步');
+                if (syncStatusElement) {
+                    updateSyncStatus('error');
                 }
             }
         }
 
-        // 关键修复：确保贴纸容器正确显示
-        function ensureStickerContainers() {
-            const pages = ['home', 'study', 'vlog', 'week', 'achieve', 'target'];
-            pages.forEach(pageId => {
-                const container = document.getElementById(`stickerContainer_${pageId}`);
-                if (container) {
-                    // 确保贴纸容器有正确的样式
-                    container.style.position = 'absolute';
-                    container.style.top = '0';
-                    container.style.left = '0';
-                    container.style.width = '100%';
-                    container.style.height = '100%';
-                    container.style.pointerEvents = 'none';
-                    container.style.zIndex = '800';
+        // 从Firebase和localStorage加载所有数据
+        function loadAllData() {
+            return new Promise((resolve, reject) => {
+                // 先从本地存储加载数据，确保应用可以立即启动
+                const savedData = localStorage.getItem('yomisWorldData');
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        folderIcons = data.folderIcons || {};
+                        folderNames = data.folderNames || {};
+                        folderContents = data.folderContents || {};
+                        targets = data.targets || [];
+                        idCounter = data.idCounter || 1;
+                        pageStickers = data.pageStickers || {
+                            home: [],
+                            study: [],
+                            vlog: [],
+                            week: [],
+                            achieve: [],
+                            target: []
+                        };
+                        profileData = data.profileData || {
+                            image: "",
+                            info: "",
+                            textColor: "#5a2e48",
+                            font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
+                        };
+                        
+                        // 数据迁移：将旧格式的文件夹内容转换为新格式
+                        Object.keys(folderContents).forEach(folderId => {
+                            const content = folderContents[folderId];
+                            // 如果是数组格式（旧格式），转换为对象格式（新格式）
+                            if (Array.isArray(content)) {
+                                folderContents[folderId] = {
+                                    section: "study", // 默认板块，实际使用时会根据文件夹ID判断
+                                    files: content
+                                };
+                            }
+                        });
+                        
+                        // 清理无效的贴纸数据（URL为空或无效的贴纸）
+                        Object.keys(pageStickers).forEach(pageId => {
+                            pageStickers[pageId] = pageStickers[pageId].filter(sticker => {
+                                return sticker && sticker.url && sticker.url.trim() !== "";
+                            });
+                        });
+                        
+                        console.log('数据已从本地存储成功加载');
+                    } catch (e) {
+                        console.error('加载本地数据失败:', e);
+                    }
                 }
+                
+                // 如果在线且Firebase已初始化，尝试从Firebase加载最新数据
+                if (isOnline && dataRef) {
+                    updateSyncStatus('syncing');
+                    dataRef.once('value').then((snapshot) => {
+                        const firebaseData = snapshot.val();
+                        
+                        if (firebaseData) {
+                            try {
+                                // 检查是否有新数据
+                                const localLastUpdated = savedData ? JSON.parse(savedData).lastUpdated || 0 : 0;
+                                const firebaseLastUpdated = firebaseData.lastUpdated || 0;
+                                
+                                // 如果Firebase数据更新，则使用Firebase数据
+                                if (firebaseLastUpdated > localLastUpdated) {
+                                    console.log('检测到Firebase有更新的数据，正在加载...');
+                                    
+                                    folderIcons = firebaseData.folderIcons || {};
+                                    folderNames = firebaseData.folderNames || {};
+                                    folderContents = firebaseData.folderContents || {};
+                                    targets = firebaseData.targets || [];
+                                    idCounter = firebaseData.idCounter || 1;
+                                    pageStickers = firebaseData.pageStickers || {
+                                        home: [],
+                                        study: [],
+                                        vlog: [],
+                                        week: [],
+                                        achieve: [],
+                                        target: []
+                                    };
+                                    profileData = firebaseData.profileData || {
+                                        image: "",
+                                        info: "",
+                                        textColor: "#5a2e48",
+                                        font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
+                                    };
+                                    
+                                    // 保存到本地存储
+                                    localStorage.setItem('yomisWorldData', JSON.stringify({
+                                        folderIcons,
+                                        folderNames,
+                                        folderContents,
+                                        targets,
+                                        idCounter,
+                                        pageStickers,
+                                        profileData,
+                                        lastUpdated: firebaseLastUpdated
+                                    }));
+                                    
+                                    console.log('数据已从Firebase成功加载并更新到本地');
+                                } else {
+                                    console.log('本地数据已是最新，无需从Firebase更新');
+                                }
+                            } catch (e) {
+                                console.error('解析Firebase数据失败:', e);
+                            }
+                        } else {
+                            console.log('Firebase中没有找到数据，使用本地数据');
+                            // 如果Firebase没有数据，将本地数据上传
+                            saveAllData();
+                        }
+                        
+                        updateSyncStatus('synced');
+                        isDataLoaded = true;
+                        resolve();
+                    }).catch((error) => {
+                        console.error('从Firebase加载数据失败:', error);
+                        updateSyncStatus('error');
+                        isDataLoaded = true;
+                        resolve();
+                    });
+                } else {
+                    console.log('当前离线或Firebase未初始化，使用本地数据');
+                    if (syncStatusElement) {
+                        updateSyncStatus('error');
+                    }
+                    isDataLoaded = true;
+                    resolve();
+                }
+            });
+        }
+        
+        // 设置实时数据监听
+        function setupRealTimeListener() {
+            if (!dataRef) return;
+            
+            dataRef.on('value', (snapshot) => {
+                const newData = snapshot.val();
+                if (newData && isDataLoaded && isOnline) {
+                    // 检查数据是否有变化
+                    const currentDataStr = JSON.stringify({
+                        folderIcons,
+                        folderNames,
+                        folderContents,
+                        targets,
+                        idCounter,
+                        pageStickers,
+                        profileData
+                    });
+                     
+                    const newDataStr = JSON.stringify({
+                        folderIcons: newData.folderIcons || {},
+                        folderNames: newData.folderNames || {},
+                        folderContents: newData.folderContents || {},
+                        targets: newData.targets || [],
+                        idCounter: newData.idCounter || 1,
+                        pageStickers: newData.pageStickers || {
+                            home: [],
+                            study: [],
+                            vlog: [],
+                            week: [],
+                            achieve: [],
+                            target: []
+                        },
+                        profileData: newData.profileData || {
+                            image: "",
+                            info: "",
+                            textColor: "#5a2e48",
+                            font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
+                        }
+                    });
+                     
+                    if (currentDataStr !== newDataStr) {
+                        // 数据有变化，显示通知
+                        showSyncNotification(newData);
+                    }
+                }
+            });
+        }
+        
+        // 显示同步通知
+        function showSyncNotification(newData) {
+            // 检查是否正在编辑贴纸
+            if (stickerEdit) {
+                // 如果正在编辑，延迟提示
+                setTimeout(() => {
+                    if (!stickerEdit) {
+                        confirmSync(newData);
+                    }
+                }, 1000);
+                return;
+            }
+            
+            confirmSync(newData);
+        }
+        
+        // 确认是否同步
+        function confirmSync(newData) {
+            if (confirm('检测到其他设备有新的更改，是否立即同步？')) {
+                // 保存当前页面ID
+                const currentPage = currentPageId;
+                
+                // 更新数据
+                folderIcons = newData.folderIcons || {};
+                folderNames = newData.folderNames || {};
+                folderContents = newData.folderContents || {};
+                targets = newData.targets || [];
+                idCounter = newData.idCounter || 1;
+                pageStickers = newData.pageStickers || {
+                    home: [],
+                    study: [],
+                    vlog: [],
+                    week: [],
+                    achieve: [],
+                    target: []
+                };
+                profileData = newData.profileData || {
+                    image: "",
+                    info: "",
+                    textColor: "#5a2e48",
+                    font: "Comic Sans MS, Arial Rounded MT Bold, sans-serif"
+                };
+                
+                // 保存到本地存储
+                localStorage.setItem('yomisWorldData', JSON.stringify({
+                    folderIcons,
+                    folderNames,
+                    folderContents,
+                    targets,
+                    idCounter,
+                    pageStickers,
+                    profileData,
+                    lastUpdated: newData.lastUpdated || Date.now()
+                }));
+                
+                // 重新渲染页面
+                renderAllFolders();
+                renderTargets();
+                renderProfileData();
+                loadPageStickers(currentPage);
+                
+                updateSyncStatus('synced');
+                alert('数据已成功同步！');
+            }
+        }
+        
+        // 更新同步状态
+        function updateSyncStatus(status) {
+            syncStatus = status;
+            if (syncStatusElement) {
+                syncStatusElement.className = `sync-status ${status}`;
+                
+                // 更新图标
+                const icon = syncStatusElement.querySelector('i');
+                if (icon) {
+                    icon.className = ''; // 清除现有类
+                     
+                    switch (status) {
+                        case 'idle':
+                            icon.className = 'fa fa-circle-o';
+                            syncStatusElement.querySelector('.status-text').textContent = '未同步';
+                            break;
+                        case 'syncing':
+                            icon.className = 'fa fa-spinner fa-spin';
+                            syncStatusElement.querySelector('.status-text').textContent = '同步中...';
+                            break;
+                        case 'synced':
+                            icon.className = 'fa fa-check-circle';
+                            syncStatusElement.querySelector('.status-text').textContent = '已同步';
+                            break;
+                        case 'error':
+                            icon.className = 'fa fa-exclamation-circle';
+                            syncStatusElement.querySelector('.status-text').textContent = '同步失败';
+                            break;
+                    }
+                }
+            }
+        }
+        
+        // 创建同步状态指示器
+        function createSyncStatusIndicator() {
+            syncStatusElement = document.createElement('div');
+            syncStatusElement.className = 'sync-status idle';
+            syncStatusElement.innerHTML = `
+                <i class="fa fa-circle-o"></i>
+                <span class="status-text">未同步</span>
+            `;
+            
+            // 添加到页面右上角
+            document.body.appendChild(syncStatusElement);
+            
+            // 添加点击事件，手动同步
+            syncStatusElement.addEventListener('click', () => {
+                if (isAdmin) {
+                    alert('正在手动同步数据...');
+                    loadAllData().then(() => {
+                        renderAllFolders();
+                        renderTargets();
+                        renderProfileData();
+                        loadPageStickers(currentPageId);
+                        alert('手动同步完成！');
+                    });
+                }
+            });
+        }
+        
+        // 监听网络状态变化
+        function setupNetworkListeners() {
+            window.addEventListener('online', () => {
+                isOnline = true;
+                console.log('网络已连接，开始同步数据...');
+                // 尝试同步本地数据到Firebase
+                saveAllData();
+            });
+            
+            window.addEventListener('offline', () => {
+                isOnline = false;
+                console.log('网络已断开，将使用本地数据');
+                updateSyncStatus('error');
             });
         }
 
@@ -677,12 +1029,7 @@
             // 显示/隐藏贴纸按钮（管理员模式下）
             if (isAdmin) {
                 document.getElementById('stickerButton').style.display = 'flex';
-            } else {
-                document.getElementById('stickerButton').style.display = 'none';
             }
-            
-            // 确保贴纸容器正确显示
-            ensureStickerContainers();
             
             // 加载当前页面的贴纸
             loadPageStickers(pageId);
@@ -760,9 +1107,6 @@
                     el.contentEditable = true;
                     el.style.cursor = "text";
                 });
-                
-                // 重新加载当前页面贴纸，确保正确显示
-                loadPageStickers(currentPageId);
                 
                 alert("✨ Edit mode begin! You can now create folders and manage content.");
             } else {
@@ -1321,51 +1665,31 @@
         // 加载指定页面的贴纸
         function loadPageStickers(pageId) {
             const container = el(`stickerContainer_${pageId}`);
-            if (!container) return;
-            
             container.innerHTML = "";
             
             const stickers = pageStickers[pageId] || [];
             stickers.forEach(stickerData => {
-                // 验证贴纸数据的完整性
-                if (!stickerData || !stickerData.id || !stickerData.url) {
-                    console.warn('Invalid sticker data:', stickerData);
-                    return;
-                }
-                
                 const sticker = document.createElement("div");
                 sticker.className = "sticker-item";
                 sticker.dataset.stickerId = stickerData.id;
-                sticker.dataset.type = stickerData.type || 'image/png';
+                sticker.dataset.type = stickerData.type;
                 sticker.dataset.url = stickerData.url;
-                sticker.style.top = stickerData.top || '50px';
-                sticker.style.left = stickerData.left || '50px';
-                sticker.style.width = stickerData.width || '150px';
-                sticker.style.height = stickerData.height || '150px';
-                sticker.style.transform = stickerData.transform || 'rotate(0deg)';
+                sticker.style.top = stickerData.top;
+                sticker.style.left = stickerData.left;
+                sticker.style.width = stickerData.width;
+                sticker.style.height = stickerData.height;
+                sticker.style.transform = stickerData.transform;
                 
-                // 确保贴纸有正确的定位
-                sticker.style.position = 'absolute';
-                sticker.style.pointerEvents = isAdmin && stickerEdit ? 'all' : 'auto';
-                
-                if (stickerData.type && stickerData.type.startsWith("image/")) {
+                if (stickerData.type.startsWith("image/")) {
                     sticker.innerHTML = `
                         <img src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;">
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
                     `;
-                } else if (stickerData.type && stickerData.type.startsWith("video/")) {
+                } else if (stickerData.type.startsWith("video/")) {
                     sticker.innerHTML = `
                         <video src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;" autoplay loop muted playsinline></video>
-                        <div class="sticker-handle"></div>
-                        <div class="sticker-rotate-tip">↺</div>
-                        <div class="sticker-flip-handle">🔄</div>
-                    `;
-                } else {
-                    // 默认显示为图片
-                    sticker.innerHTML = `
-                        <img src="${stickerData.url}" style="width: 100%; height: 100%; object-fit: contain;">
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
@@ -1391,25 +1715,16 @@
                 sticker.addEventListener("dblclick", (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (isAdmin) {
-                        currentDeleteSticker = sticker;
-                        el("deleteStickerModal").style.display = "block";
-                        el("deleteStickerOverlay").style.display = "block";
-                    }
+                    currentDeleteSticker = sticker;
+                    el("deleteStickerModal").style.display = "block";
+                    el("deleteStickerOverlay").style.display = "block";
                 });
                 
                 container.appendChild(sticker);
-                
-                // 初始化贴纸交互功能
                 initStickerDrag(sticker);
                 initStickerResize(sticker);
                 initStickerRotate(sticker);
                 initStickerFlipMenu(sticker);
-                
-                // 如果在编辑模式，添加editable类
-                if (isAdmin && stickerEdit) {
-                    sticker.classList.add('editable');
-                }
             });
         }
 
@@ -1946,37 +2261,54 @@
         }
 
         // 初始化页面
-        window.addEventListener("DOMContentLoaded", () => {
-            // 加载本地存储数据
-            loadAllData();
-            
-            // 确保贴纸容器正确显示
-            ensureStickerContainers();
-            
-            // 渲染初始内容
-            renderAllFolders();
-            renderTargets();
-            renderProfileData();
-            
-            // 默认显示首页贴纸
-            loadPageStickers('home');
-            
-            // 确保贴纸按钮初始状态正确
-            if (!isAdmin) {
-                document.getElementById('stickerButton').style.display = 'none';
+        window.addEventListener("DOMContentLoaded", async () => {
+            try {
+                // 创建同步状态指示器
+                createSyncStatusIndicator();
+                
+                // 设置网络监听
+                setupNetworkListeners();
+                
+                // 初始化Firebase
+                await initFirebase().catch(error => {
+                    console.warn('Firebase初始化失败，将使用本地存储模式:', error);
+                });
+                
+                // 加载数据
+                await loadAllData();
+                
+                // 设置实时数据监听
+                setupRealTimeListener();
+                
+                // 渲染初始内容
+                renderAllFolders();
+                renderTargets();
+                renderProfileData();
+                
+                // 默认显示首页贴纸
+                loadPageStickers('home');
+                
+                // 点击空白处取消贴纸选中
+                document.addEventListener("click", (e) => {
+                    if (stickerEdit && !e.target.closest('.sticker-item') && 
+                        !e.target.closest('.sticker-toolbar') && 
+                        e.target.id !== 'stickerButton') {
+                        els('.sticker-item').forEach(s => {
+                            s.style.outline = 'none';
+                        });
+                        selectedSticker = null;
+                    }
+                });
+                
+                console.log('页面初始化完成');
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+                // 即使初始化失败，也要确保基本功能可用
+                renderAllFolders();
+                renderTargets();
+                renderProfileData();
+                loadPageStickers('home');
             }
-            
-            // 点击空白处取消贴纸选中
-            document.addEventListener("click", (e) => {
-                if (stickerEdit && !e.target.closest('.sticker-item') && 
-                    !e.target.closest('.sticker-toolbar') && 
-                    e.target.id !== 'stickerButton') {
-                    els('.sticker-item').forEach(s => {
-                        s.style.outline = 'none';
-                    });
-                    selectedSticker = null;
-                }
-            });
         });
 
         // ====================== 首页头像 & 样式编辑 ======================
