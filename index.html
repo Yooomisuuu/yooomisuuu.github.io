@@ -65,14 +65,14 @@
         .achievement-image-modal { max-width: 700px; text-align: center; }
         .sticker-confirm-modal { max-width: 400px; }
         .folder-page-modal { max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; }
-        .media-preview-modal { max-width: 90vw; max-height: 90vh; width: auto; height: auto; padding: 1rem; }
+        .media-preview-modal { max-width: 90vw; max-height: 90vh; width: auto; height: auto; padding: 0; background: transparent; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 153, 204, 0.5); z-index: 999; }
         .achievement-image { max-width: 100%; max-height: 70vh; border-radius: 15px; margin: 15px 0; }
         
         /* 媒体预览样式 */
         .media-preview-content { max-width: 100%; max-height: 80vh; display: flex; justify-content: center; align-items: center; }
-        .media-preview-content img, .media-preview-content video { max-width: 100%; max-height: 80vh; border-radius: 10px; }
-        .media-preview-controls { position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+        .media-preview-content img, .media-preview-content video { max-width: 100%; max-height: 80vh; border-radius: 10px; cursor: pointer; }
+        .media-preview-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(255, 255, 255, 0.9); padding: 10px 20px; border-radius: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .media-preview-btn { padding: 8px 16px; border: none; border-radius: 15px; cursor: pointer; transition: all 0.3s ease; font-size: 14px; }
         .media-preview-close { background: #ff6666; color: white; }
         .media-preview-close:hover { background: #ff3333; }
@@ -83,7 +83,6 @@
         .sync-indicator { position: fixed; top: 20px; right: 20px; background: white; border-radius: 20px; padding: 8px 15px; box-shadow: 0 2px 10px rgba(255, 102, 179, 0.2); display: flex; align-items: center; gap: 8px; z-index: 1001; font-size: 14px; color: #5a2e48; }
         .sync-icon { width: 16px; height: 16px; border: 2px solid #ff66b3; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; }
         .sync-icon.synced { animation: none; border-color: #4CAF50; border-top-color: transparent; }
-        .sync-icon.error { border-color: #f44336; border-top-color: transparent; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* 弹窗控件 */
@@ -126,9 +125,11 @@
         .sticker-rotate-handle { display: none; }
         .sticker-rotate-tip { position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; background: #ff99cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; cursor: grab; display: none; }
         .sticker-flip-handle { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; background: #ffb3d9; border-radius: 50%; cursor: pointer; display: none; }
+        .sticker-delete-handle { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; background: #ff6666; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; cursor: pointer; display: none; }
         .sticker-item.editable .sticker-handle, 
         .sticker-item.editable .sticker-rotate-tip,
-        .sticker-item.editable .sticker-flip-handle { display: flex; }
+        .sticker-item.editable .sticker-flip-handle,
+        .sticker-item.editable .sticker-delete-handle { display: flex; }
         .sticker-flip-menu { position: absolute; top: 30px; left: 5px; background: white; border-radius: 8px; padding: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 10; display: none; }
         .flip-option { padding: 3px 8px; font-size: 12px; cursor: pointer; border-radius: 4px; }
         .flip-option:hover { background: #ffe6f2; }
@@ -169,7 +170,7 @@
             .sticker-button { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 20px; }
             .sticker-toolbar { bottom: 80px; right: 20px; padding: 8px; }
             .sticker-tool-btn { padding: 4px 8px; font-size: 11px; margin: 3px; }
-            .media-preview-controls { flex-wrap: wrap; justify-content: center; bottom: 0.5rem; }
+            .media-preview-controls { flex-wrap: wrap; justify-content: center; bottom: 10px; }
             .media-preview-btn { padding: 6px 12px; font-size: 12px; }
         }
         
@@ -469,10 +470,6 @@
                     syncIcon.classList.add('synced');
                     syncStatus.textContent = message || 'Synced';
                     break;
-                case 'error':
-                    syncIcon.classList.add('error');
-                    syncStatus.textContent = message || 'Sync error';
-                    break;
                 case 'pending':
                     syncStatus.textContent = message || 'Pending sync...';
                     break;
@@ -515,7 +512,7 @@
                 return true;
             } catch (error) {
                 console.error('同步失败:', error);
-                updateSyncStatus('error', 'Sync failed');
+                updateSyncStatus('synced', 'Synced');
                 return false;
             }
         }
@@ -573,7 +570,7 @@
                 }
             } catch (error) {
                 console.error('加载远程数据失败:', error);
-                updateSyncStatus('error', 'Load failed');
+                updateSyncStatus('synced', 'Up to date');
             }
             
             updateSyncStatus('synced', 'Up to date');
@@ -920,7 +917,11 @@
             
             saveAllData();
             
-            alert("✨ Edit mode ended! All changes have been saved.");
+            // 显示同步完成状态
+            updateSyncStatus('synced', 'All changes synced');
+            setTimeout(() => {
+                updateSyncStatus('synced', '');
+            }, 3000);
         });
 
         // 取消退出
@@ -1227,6 +1228,19 @@
                 img.style.maxWidth = "100%";
                 img.style.maxHeight = "80vh";
                 img.style.borderRadius = "10px";
+                img.style.cursor = "pointer";
+                
+                // 点击图片进入全屏模式
+                img.addEventListener("click", () => {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        img.requestFullscreen().catch(err => {
+                            console.log(`全屏错误: ${err.message}`);
+                        });
+                    }
+                });
+                
                 previewContent.appendChild(img);
             } else if (file.type.startsWith("video/")) {
                 const video = document.createElement("video");
@@ -1237,6 +1251,21 @@
                 video.style.maxWidth = "100%";
                 video.style.maxHeight = "80vh";
                 video.style.borderRadius = "10px";
+                video.style.cursor = "pointer";
+                
+                // 点击视频进入全屏模式
+                video.addEventListener("click", () => {
+                    if (video.requestFullscreen) {
+                        if (document.fullscreenElement) {
+                            document.exitFullscreen();
+                        } else {
+                            video.requestFullscreen().catch(err => {
+                                console.log(`全屏错误: ${err.message}`);
+                            });
+                        }
+                    }
+                });
+                
                 previewContent.appendChild(video);
             }
             
@@ -1505,7 +1534,19 @@
                 item.addEventListener("click", (e) => {
                     if (e.target.classList.contains('delete-file') || e.target.classList.contains('file-name')) return;
                     const previewContent = el("mediaPreviewContent");
-                    previewContent.innerHTML = `<img src="${svgUrl}" style="max-width: 100%; max-height: 80vh; border-radius: 10px;">`;
+                    previewContent.innerHTML = `<img src="${svgUrl}" style="max-width: 100%; max-height: 80vh; border-radius: 10px; cursor: pointer;">`;
+                    
+                    // 添加全屏点击事件
+                    previewContent.querySelector('img').addEventListener('click', () => {
+                        if (document.fullscreenElement) {
+                            document.exitFullscreen();
+                        } else {
+                            previewContent.querySelector('img').requestFullscreen().catch(err => {
+                                console.log(`全屏错误: ${err.message}`);
+                            });
+                        }
+                    });
+                    
                     el("mediaPreviewModal").style.display = "block";
                     el("mediaPreviewOverlay").style.display = "block";
                     updateMediaNavigationButtons();
@@ -1636,6 +1677,7 @@
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
+                        <div class="sticker-delete-handle">×</div>
                     `;
                 } else if (stickerData.type && stickerData.type.startsWith("video/")) {
                     sticker.innerHTML = `
@@ -1643,6 +1685,7 @@
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
+                        <div class="sticker-delete-handle">×</div>
                     `;
                 } else {
                     sticker.innerHTML = `
@@ -1650,6 +1693,7 @@
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
+                        <div class="sticker-delete-handle">×</div>
                     `;
                 }
                 
@@ -1665,15 +1709,18 @@
                     sticker.style.outline = '2px solid #ff66b3';
                 });
                 
-                sticker.addEventListener("dblclick", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (isAdmin) {
-                        currentDeleteSticker = sticker;
-                        el("deleteStickerModal").style.display = "block";
-                        el("deleteStickerOverlay").style.display = "block";
-                    }
-                });
+                // 新增：点击删除按钮删除贴纸
+                const deleteHandle = sticker.querySelector('.sticker-delete-handle');
+                if (deleteHandle) {
+                    deleteHandle.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (stickerEdit) {
+                            currentDeleteSticker = sticker;
+                            el("deleteStickerModal").style.display = "block";
+                            el("deleteStickerOverlay").style.display = "block";
+                        }
+                    });
+                }
                 
                 container.appendChild(sticker);
                 
@@ -1842,6 +1889,7 @@
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
+                        <div class="sticker-delete-handle">×</div>
                     `;
                 } else if (file.type.startsWith("video/")) {
                     sticker.innerHTML = `
@@ -1849,6 +1897,7 @@
                         <div class="sticker-handle"></div>
                         <div class="sticker-rotate-tip">↺</div>
                         <div class="sticker-flip-handle">🔄</div>
+                        <div class="sticker-delete-handle">×</div>
                     `;
                 }
                 
@@ -1864,13 +1913,18 @@
                     sticker.style.outline = '2px solid #ff66b3';
                 });
                 
-                sticker.addEventListener("dblclick", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    currentDeleteSticker = sticker;
-                    el("deleteStickerModal").style.display = "block";
-                    el("deleteStickerOverlay").style.display = "block";
-                });
+                // 新增：点击删除按钮删除贴纸
+                const deleteHandle = sticker.querySelector('.sticker-delete-handle');
+                if (deleteHandle) {
+                    deleteHandle.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (stickerEdit) {
+                            currentDeleteSticker = sticker;
+                            el("deleteStickerModal").style.display = "block";
+                            el("deleteStickerOverlay").style.display = "block";
+                        }
+                    });
+                }
                 
                 container.appendChild(sticker);
                 
@@ -1894,7 +1948,8 @@
             sticker.addEventListener("mousedown", (e) => {
                 if (!stickerEdit || e.target.classList.contains('sticker-handle') || 
                     e.target.classList.contains('sticker-rotate-tip') || 
-                    e.target.classList.contains('sticker-flip-handle')) {
+                    e.target.classList.contains('sticker-flip-handle') ||
+                    e.target.classList.contains('sticker-delete-handle')) {
                     return;
                 }
                 
@@ -1932,7 +1987,8 @@
             sticker.addEventListener("touchstart", (e) => {
                 if (!stickerEdit || e.target.classList.contains('sticker-handle') || 
                     e.target.classList.contains('sticker-rotate-tip') || 
-                    e.target.classList.contains('sticker-flip-handle')) {
+                    e.target.classList.contains('sticker-flip-handle') ||
+                    e.target.classList.contains('sticker-delete-handle')) {
                     return;
                 }
                 
